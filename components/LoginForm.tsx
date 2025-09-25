@@ -1,22 +1,31 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const router = useRouter()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle login logic here
-    console.log("Login attempt:", { email, password })
+    if (email === "admin@bookhub.com" && password === "admin123") {
+      localStorage.setItem("role", "admin")
+      router.push("/admin") // redirect to admin dashboard
+    } else if (email === "buyer@bookhub.com" && password === "buyer123") {
+      localStorage.setItem("role", "buyer")
+      router.push("/store") // redirect to buyer store
+    } else {
+      alert("Invalid email or password")
+    }  
   }
 
   return (
