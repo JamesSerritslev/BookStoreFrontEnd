@@ -6,7 +6,7 @@
 ✅ **JWT Token Storage** - Implemented with React Context  
 ✅ **User Role Management** - Role-based UI rendering  
 ✅ **Protected Routes** - Role-based route protection  
-✅ **Conditional UI** - Admin/Seller features hidden from buyers  
+✅ **Conditional UI** - Admin/Seller features hidden from buyers
 
 ---
 
@@ -18,18 +18,19 @@ The frontend expects these endpoints from the backend team:
 
 ```typescript
 // Authentication endpoints
-POST /auth/login
-POST /auth/register
-POST /auth/refresh (optional)
-POST /auth/logout (optional)
+POST / auth / login;
+POST / auth / register;
+POST / auth / refresh(optional);
+POST / auth / logout(optional);
 
 // Role management (Admin only)
-PUT /users/{id}/role
+PUT / users / { id } / role;
 ```
 
 ### **Expected Request/Response Format**
 
 #### **Login Request**
+
 ```typescript
 POST /auth/login
 Content-Type: application/json
@@ -41,13 +42,14 @@ Content-Type: application/json
 ```
 
 #### **Login Response**
+
 ```typescript
 HTTP 200 OK
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": 1,
-    "email": "user@example.com", 
+    "email": "user@example.com",
     "firstName": "John",
     "lastName": "Doe",
     "role": "BUYER" | "SELLER" | "ADMIN"
@@ -56,13 +58,14 @@ HTTP 200 OK
 ```
 
 #### **Register Request**
+
 ```typescript
 POST /auth/register
 Content-Type: application/json
 
 {
   "firstName": "John",
-  "lastName": "Doe", 
+  "lastName": "Doe",
   "email": "user@example.com",
   "password": "password123",
   "role": "BUYER" | "SELLER" | "ADMIN"
@@ -70,6 +73,7 @@ Content-Type: application/json
 ```
 
 #### **Register Response**
+
 ```typescript
 HTTP 201 Created
 {
@@ -77,7 +81,7 @@ HTTP 201 Created
   "user": {
     "id": 1,
     "email": "user@example.com",
-    "firstName": "John", 
+    "firstName": "John",
     "lastName": "Doe",
     "role": "BUYER"
   }
@@ -91,6 +95,7 @@ HTTP 201 Created
 ### **1. Update API Base URL**
 
 Create `.env.local` file:
+
 ```bash
 NEXT_PUBLIC_API_URL=https://your-backend-domain.com/api
 ```
@@ -98,6 +103,7 @@ NEXT_PUBLIC_API_URL=https://your-backend-domain.com/api
 ### **2. JWT Token Requirements**
 
 The frontend expects JWT tokens with these claims:
+
 ```typescript
 {
   "userId": number,
@@ -111,6 +117,7 @@ The frontend expects JWT tokens with these claims:
 ### **3. CORS Configuration**
 
 Backend must allow requests from frontend domain:
+
 ```java
 // Spring Boot CORS configuration
 @CrossOrigin(origins = {"http://localhost:3000", "https://your-frontend-domain.com"})
@@ -129,6 +136,7 @@ Backend must allow requests from frontend domain:
 ### **Mock Data Removal**
 
 Search for these comments to find mock code to replace:
+
 - `// TODO: Backend team - Replace this mock implementation with:`
 - `// MOCK DATA - Remove when backend is ready`
 
@@ -138,7 +146,7 @@ Search for these comments to find mock code to replace:
 
 - ✅ JWT token validation and expiry checking
 - ✅ Automatic token refresh handling
-- ✅ Secure localStorage token management  
+- ✅ Secure localStorage token management
 - ✅ Role-based access control (RBAC)
 - ✅ Protected route components
 - ✅ Authorization headers for API requests
@@ -148,18 +156,21 @@ Search for these comments to find mock code to replace:
 ## 🎨 **User Roles & Permissions**
 
 ### **BUYER Role**
+
 - Access to shop and browse books
 - Cart and order management
 - Profile management
 
-### **SELLER Role** 
+### **SELLER Role**
+
 - All BUYER permissions
 - Book inventory management
 - Sales analytics dashboard
 - Add/edit/delete books
 
 ### **ADMIN Role**
-- All SELLER permissions  
+
+- All SELLER permissions
 - User role management
 - System administration
 - Platform analytics
@@ -169,6 +180,7 @@ Search for these comments to find mock code to replace:
 ## 📱 **Component Usage Examples**
 
 ### **Protected Routes**
+
 ```tsx
 import { AuthRoute, AdminRoute, SellerRoute } from '@/components/ProtectedRoute';
 
@@ -182,23 +194,24 @@ import { AuthRoute, AdminRoute, SellerRoute } from '@/components/ProtectedRoute'
   <AdminPanel />
 </AdminRoute>
 
-// Require seller or admin role  
+// Require seller or admin role
 <SellerRoute>
   <BookManagement />
 </SellerRoute>
 ```
 
 ### **Conditional Rendering**
+
 ```tsx
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
 
 function Navbar() {
   const { user, hasRole } = useAuth();
-  
+
   return (
     <>
-      {hasRole('ADMIN') && <AdminButton />}
-      {hasRole('SELLER', 'ADMIN') && <SellerButton />}
+      {hasRole("ADMIN") && <AdminButton />}
+      {hasRole("SELLER", "ADMIN") && <SellerButton />}
     </>
   );
 }

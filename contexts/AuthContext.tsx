@@ -104,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // const data = await response.json();
       // if (!response.ok) throw new Error(data.message);
       // setToken(data.token); setUser(data.user); etc.
-      
+
       // MOCK DATA - Remove when backend is ready
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // const authData = await response.json();
       // if (!response.ok) throw new Error(authData.message);
       // setToken(authData.token); setUser(authData.user); etc.
-      
+
       // MOCK DATA - Remove when backend is ready
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
