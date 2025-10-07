@@ -24,6 +24,8 @@ import {
 import { AuthRoute } from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import type { User } from "@/lib/jwt";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Dashboard() {
   return (
@@ -35,6 +37,7 @@ export default function Dashboard() {
 
 function DashboardContent() {
   const { user, hasRole } = useAuth();
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -43,7 +46,7 @@ function DashboardContent() {
         <div className="max-w-7xl mx-auto px-6">
           <WelcomeSection user={user} />
           <StatsCards user={user} hasRole={hasRole} />
-          <DashboardSections hasRole={hasRole} />
+          <DashboardSections hasRole={hasRole} router={router} />
         </div>
       </main>
       <Footer />
@@ -185,8 +188,10 @@ function StatsCards({
 
 function DashboardSections({
   hasRole,
+  router,
 }: {
   hasRole: (...roles: string[]) => boolean;
+  router: any;
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -304,10 +309,13 @@ function DashboardSections({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Book
-              </Button>
+          <Link href="/admin">
+            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Book
+            </Button>
+          </Link>
+   
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                 <Package className="h-4 w-4 mr-2" />
                 Manage Inventory

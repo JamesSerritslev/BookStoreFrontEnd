@@ -21,15 +21,17 @@ import {
   Package,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import AddNewBookButton from "@/components/AddNewBookButton";
 
 interface NavbarProps {
   isSignedIn?: boolean;
 }
+  
 
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
-
+  
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
