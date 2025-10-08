@@ -55,7 +55,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
     <nav className="bg-black border-b border-gray-800 px-6 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <Link href="/book-browser" className="flex items-center">
           <span className="text-2xl font-bold text-white">
             Book<span className="text-teal-400">hub</span>
           </span>
