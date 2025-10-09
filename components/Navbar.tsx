@@ -21,15 +21,17 @@ import {
   Package,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import AddNewBookButton from "@/components/AddNewBookButton";
 
 interface NavbarProps {
   isSignedIn?: boolean;
 }
+  
 
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
-
+  
   // Number of columns for the Book Categories dropdown.
   // Set to 2 or 3 depending on how many columns you want.
   const CATEGORY_COLUMNS = 3;
@@ -39,7 +41,6 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
   const gridTemplateColumns = `repeat(${CATEGORY_COLUMNS}, ${CATEGORY_COL_WIDTH_REM}rem)`;
   // Margin-left to roughly center the left-most column under the trigger.
   const leftOffset = `calc(50% - ${CATEGORY_COL_WIDTH_REM / 2}rem)`;
-
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
