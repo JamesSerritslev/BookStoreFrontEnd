@@ -199,9 +199,10 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
                   variant="ghost"
                   size="sm"
                   className="text-white hover:text-teal-400 hover:bg-gray-800"
+                  onClick={() => handleNavigation("/admin")}
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Add Book
+                  Add New Book
                 </Button>
               )}
 
@@ -254,7 +255,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
                   {hasRole("BUYER", "SELLER", "ADMIN") && (
                     <DropdownMenuItem
-                      onSelect={() => handleNavigation("/orders")}
+                      onSelect={() => handleNavigation("/admin/orders")}
                       className="text-white hover:bg-gray-800 cursor-pointer"
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
