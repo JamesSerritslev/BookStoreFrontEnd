@@ -32,6 +32,15 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
   
+  // Number of columns for the Book Categories dropdown.
+  // Set to 2 or 3 depending on how many columns you want.
+  const CATEGORY_COLUMNS = 3;
+  const CATEGORY_COL_WIDTH_REM = 10; // width of each column in rem
+  const DROPDOWN_PADDING_REM = 1; // left+right padding (approx)
+  const dropdownWidth = `${CATEGORY_COLUMNS * CATEGORY_COL_WIDTH_REM + DROPDOWN_PADDING_REM}rem`;
+  const gridTemplateColumns = `repeat(${CATEGORY_COLUMNS}, ${CATEGORY_COL_WIDTH_REM}rem)`;
+  // Margin-left to roughly center the left-most column under the trigger.
+  const leftOffset = `calc(50% - ${CATEGORY_COL_WIDTH_REM / 2}rem)`;
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
@@ -66,22 +75,109 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
                 <ChevronDown className="ml-1 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-gray-900 border-gray-700">
-              <DropdownMenuItem className="text-white hover:bg-gray-800">
-                Fiction
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-gray-800">
-                Non-Fiction
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-gray-800">
-                Science
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-gray-800">
-                Technology
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-gray-800">
-                Biography
-              </DropdownMenuItem>
+            <DropdownMenuContent
+              className="bg-gray-900 border-gray-700 p-2"
+              style={{
+                marginLeft: leftOffset,
+                width: dropdownWidth,
+                // Keep dropdown within the viewport; only scroll internally when it exceeds available height
+                maxHeight: "calc(100vh - 6rem)",
+                overflowY: "auto",
+              }}
+            >
+              <div className="grid gap-1" style={{ gridTemplateColumns }}>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Sad People’s Autobiographies (Biography & Memoir)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Crystal Moms & Vibe Checks (Body, Mind, & Spirit)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Capitalism 101 (Business)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Baby’s First Existential Crisis (Children's)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Hackerman Stuff (Computer & Technology)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  How to Burn Water (Cookbooks & Wine)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Glue & Glitter Addicts (Crafts & Hobbies)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Debt & Student Tears (Education)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  It’s Complicated (Family & Relationships)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Fake Stuff (Fiction)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Gym Bros & Salad (Health & Fitness)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Old Dead People (History)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  HGTV Dreams (Home & Garden)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Nightmares on Paper (Horror)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Japanese Cartoon Books (Manga & Graphic Novels)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Doctor’s Homework (Medical & Nursing)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Airport Dad Reads (Mystery & Thrillers)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Supposedly True Stuff (Non-Fiction)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Sad Rhymes (Poetry)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Arguing About Gov’t (Political Science)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Brain Hurts (Psychology)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Sky Daddy Books (Religion)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Kissing Simulator (Romance)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Space Wizards (Science Fiction)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Fix Yo Self (Self Help)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Overthinking Everything (Social Science)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Extreme Frisbee Majors (Sports & Recreation)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Escaping Ohio (Travel)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Netflix but in Print (True Crime)
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800">
+                  Angst & Acne (Young Adult)
+                </DropdownMenuItem>
+                {/* Add empty placeholders if you want equal cells, or let grid auto-fill */}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
