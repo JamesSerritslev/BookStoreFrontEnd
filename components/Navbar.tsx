@@ -275,7 +275,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
                   {hasRole("ADMIN") && (
                     <DropdownMenuItem
-                      onSelect={() => handleNavigation("/admin")}
+                      onSelect={() => handleNavigation("/admin/adminPanel")}
                       className="text-white hover:bg-gray-800 cursor-pointer"
                     >
                       <Settings className="h-4 w-4 mr-2" />
