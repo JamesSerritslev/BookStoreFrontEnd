@@ -12,7 +12,6 @@ type Order = {
 }
 
 export default function Orders() {
-    // ✅ Explicitly tell TypeScript what type the state holds
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<Error | null>(null)
