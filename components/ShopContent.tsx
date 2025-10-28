@@ -1,24 +1,27 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Search, Filter, ShoppingCart, Star } from "lucide-react"
+import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Search, Filter, ShoppingCart, Star, Loader2 } from "lucide-react";
+import { addToCart } from "@/lib/api/cart";
+import { useToast } from "@/hooks/use-toast";
 
 const DUMMY_BOOKS = [
     {
         id: 1,
         title: "The Rizzonomicon",
         subtitle: "How to Up Your Game and NPC-Proof Your Life",
-        author: "Chad ThunderSlam",
+        author: "Chad Thundercock",
         price: 24.99,
         originalPrice: 29.99,
         rating: 4.5,
         reviews: 1247,
         category: "Self-Help",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
         inStock: true,
         featured: true,
     },
@@ -32,7 +35,8 @@ const DUMMY_BOOKS = [
         rating: 4.2,
         reviews: 892,
         category: "Business",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
         inStock: true,
         featured: false,
     },
@@ -46,7 +50,8 @@ const DUMMY_BOOKS = [
         rating: 4.0,
         reviews: 543,
         category: "Health & Fitness",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
         inStock: true,
         featured: true,
     },
@@ -60,7 +65,8 @@ const DUMMY_BOOKS = [
         rating: 4.7,
         reviews: 2156,
         category: "Marketing",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
         inStock: true,
         featured: false,
     },
@@ -74,7 +80,8 @@ const DUMMY_BOOKS = [
         rating: 3.8,
         reviews: 678,
         category: "Psychology",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
         inStock: false,
         featured: false,
     },
@@ -88,7 +95,8 @@ const DUMMY_BOOKS = [
         rating: 4.3,
         reviews: 1034,
         category: "Cooking",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=600&fit=crop",
         inStock: true,
         featured: false,
     },
@@ -102,7 +110,8 @@ const DUMMY_BOOKS = [
         rating: 4.1,
         reviews: 1567,
         category: "Finance",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=600&fit=crop",
         inStock: true,
         featured: true,
     },
@@ -116,52 +125,113 @@ const DUMMY_BOOKS = [
         rating: 4.6,
         reviews: 987,
         category: "Self-Help",
-        cover: "/images/bookFiller.jpg",
+        cover:
+            "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
         inStock: true,
         featured: false,
     },
-]
+];
 
-const CATEGORIES = ["All", "Self-Help", "Business", "Health & Fitness", "Marketing", "Psychology", "Cooking", "Finance"]
+const CATEGORIES = [
+    "All",
+    "Self-Help",
+    "Business",
+    "Health & Fitness",
+    "Marketing",
+    "Psychology",
+    "Cooking",
+    "Finance",
+];
 
 export function ShopContent() {
-    const [searchTerm, setSearchTerm] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState("All")
-    const [sortBy, setSortBy] = useState("featured")
+    const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [sortBy, setSortBy] = useState("featured");
+    const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
     const filteredAndSortedBooks = useMemo(() => {
         const filtered = DUMMY_BOOKS.filter((book) => {
             const matchesSearch =
                 book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                book.subtitle.toLowerCase().includes(searchTerm.toLowerCase())
-            const matchesCategory = selectedCategory === "All" || book.category === selectedCategory
-            return matchesSearch && matchesCategory
-        })
+                book.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory =
+                selectedCategory === "All" || book.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
 
         // Sort books
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case "price-low":
-                    return a.price - b.price
+                    return a.price - b.price;
                 case "price-high":
-                    return b.price - a.price
+                    return b.price - a.price;
                 case "rating":
-                    return b.rating - a.rating
+                    return b.rating - a.rating;
                 case "featured":
                 default:
-                    return b.featured ? 1 : -1
+                    return b.featured ? 1 : -1;
             }
-        })
+        });
 
-        return filtered
-    }, [searchTerm, selectedCategory, sortBy])
+        return filtered;
+    }, [searchTerm, selectedCategory, sortBy]);
+
+    const handleAddToCart = async (bookId: number, bookTitle: string) => {
+        try {
+            setAddingToCart(bookId);
+
+            // Convert book ID to UUID format for cart API
+            // Format: 00000000-0000-0000-0000-000000000XXX where XXX is the book ID
+            const inventoryId = `00000000-0000-0000-0000-${String(bookId).padStart(
+                12,
+                "0"
+            )}`;
+
+            console.log(
+                `Adding book ${bookId} (${bookTitle}) to cart with inventoryId: ${inventoryId}`
+            );
+
+            await addToCart(inventoryId, 1);
+
+            toast({
+                title: "Added to cart!",
+                description: `"${bookTitle}" has been added to your cart.`,
+            });
+        } catch (error) {
+            console.error("Failed to add to cart:", error);
+
+            // Check if error is due to network/backend not running
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to add item to cart. Please try again.";
+
+            // Provide helpful message if backend is not running
+            const detailedMessage = errorMessage.includes("fetch")
+                ? "Unable to connect to the server. Make sure the backend is running on " +
+                (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080")
+                : errorMessage;
+
+            toast({
+                title: "Error",
+                description: detailedMessage,
+                variant: "destructive",
+            });
+        } finally {
+            setAddingToCart(null);
+        }
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-4">Book Shop</h1>
-                <p className="text-gray-400 mb-6">Discover your next great read from our collection</p>
+                <p className="text-gray-400 mb-6">
+                    Discover your next great read from our collection
+                </p>
 
                 {/* Search and Filter Bar */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -219,7 +289,11 @@ export function ShopContent() {
                                     alt={book.title}
                                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                                 />
-                                {book.featured && <Badge className="absolute top-2 left-2 bg-teal-500 text-black">Featured</Badge>}
+                                {book.featured && (
+                                    <Badge className="absolute top-2 left-2 bg-teal-500 text-black">
+                                        Featured
+                                    </Badge>
+                                )}
                                 {!book.inStock && (
                                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                                         <Badge variant="destructive">Out of Stock</Badge>
@@ -229,8 +303,12 @@ export function ShopContent() {
 
                             {/* Book Details */}
                             <div className="p-4">
-                                <h3 className="font-semibold text-lg mb-1 line-clamp-1">{book.title}</h3>
-                                <p className="text-gray-400 text-sm mb-2 line-clamp-2">{book.subtitle}</p>
+                                <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                                    {book.title}
+                                </h3>
+                                <p className="text-gray-400 text-sm mb-2 line-clamp-2">
+                                    {book.subtitle}
+                                </p>
                                 <p className="text-gray-500 text-sm mb-3">by {book.author}</p>
 
                                 {/* Rating */}
@@ -240,7 +318,9 @@ export function ShopContent() {
                                             <Star
                                                 key={i}
                                                 className={`w-4 h-4 ${
-                                                    i < Math.floor(book.rating) ? "text-yellow-400 fill-current" : "text-gray-600"
+                                                    i < Math.floor(book.rating)
+                                                        ? "text-yellow-400 fill-current"
+                                                        : "text-gray-600"
                                                 }`}
                                             />
                                         ))}
@@ -253,13 +333,20 @@ export function ShopContent() {
                                 {/* Price */}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xl font-bold text-teal-400">${book.price}</span>
+                    <span className="text-xl font-bold text-teal-400">
+                      ${book.price}
+                    </span>
                                         {book.originalPrice && (
-                                            <span className="text-sm text-gray-500 line-through">${book.originalPrice}</span>
+                                            <span className="text-sm text-gray-500 line-through">
+                        ${book.originalPrice}
+                      </span>
                                         )}
                                     </div>
                                     {book.originalPrice && (
-                                        <Badge variant="secondary" className="bg-red-900 text-red-200">
+                                        <Badge
+                                            variant="secondary"
+                                            className="bg-red-900 text-red-200"
+                                        >
                                             Save ${(book.originalPrice - book.price).toFixed(2)}
                                         </Badge>
                                     )}
@@ -267,15 +354,25 @@ export function ShopContent() {
 
                                 {/* Add to Cart Button */}
                                 <Button
+                                    onClick={() => handleAddToCart(book.id, book.title)}
                                     className={`w-full ${
                                         book.inStock
                                             ? "bg-teal-500 hover:bg-teal-600 text-black"
                                             : "bg-gray-700 text-gray-400 cursor-not-allowed"
                                     }`}
-                                    disabled={!book.inStock}
+                                    disabled={!book.inStock || addingToCart === book.id}
                                 >
-                                    <ShoppingCart className="w-4 h-4 mr-2" />
-                                    {book.inStock ? "Add to Cart" : "Out of Stock"}
+                                    {addingToCart === book.id ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShoppingCart className="w-4 h-4 mr-2" />
+                                            {book.inStock ? "Add to Cart" : "Out of Stock"}
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </CardContent>
@@ -292,9 +389,9 @@ export function ShopContent() {
                     </div>
                     <Button
                         onClick={() => {
-                            setSearchTerm("")
-                            setSelectedCategory("All")
-                            setSortBy("featured")
+                            setSearchTerm("");
+                            setSelectedCategory("All");
+                            setSortBy("featured");
                         }}
                         variant="outline"
                         className="border-teal-500 text-teal-400 hover:bg-teal-500 hover:text-black"
@@ -304,5 +401,5 @@ export function ShopContent() {
                 </div>
             )}
         </div>
-    )
+    );
 }
