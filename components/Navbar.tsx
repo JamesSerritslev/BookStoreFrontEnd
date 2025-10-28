@@ -26,18 +26,19 @@ import AddNewBookButton from "@/components/AddNewBookButton";
 interface NavbarProps {
   isSignedIn?: boolean;
 }
-  
 
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
-  
+
   // Number of columns for the Book Categories dropdown.
   // Set to 2 or 3 depending on how many columns you want.
   const CATEGORY_COLUMNS = 3;
   const CATEGORY_COL_WIDTH_REM = 10; // width of each column in rem
   const DROPDOWN_PADDING_REM = 1; // left+right padding (approx)
-  const dropdownWidth = `${CATEGORY_COLUMNS * CATEGORY_COL_WIDTH_REM + DROPDOWN_PADDING_REM}rem`;
+  const dropdownWidth = `${
+    CATEGORY_COLUMNS * CATEGORY_COL_WIDTH_REM + DROPDOWN_PADDING_REM
+  }rem`;
   const gridTemplateColumns = `repeat(${CATEGORY_COLUMNS}, ${CATEGORY_COL_WIDTH_REM}rem)`;
   // Margin-left to roughly center the left-most column under the trigger.
   const leftOffset = `calc(50% - ${CATEGORY_COL_WIDTH_REM / 2}rem)`;
@@ -318,6 +319,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
                 variant="ghost"
                 size="icon"
                 className="text-white hover:text-teal-400 hover:bg-gray-800"
+                onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
               </Button>
