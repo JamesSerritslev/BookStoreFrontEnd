@@ -36,22 +36,23 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
   // Book categories - Top 15 most popular
   const bookCategories = [
-    { name: "Fiction", icon: "📚", slug: "fiction" },
-    { name: "Mystery & Thriller", icon: "🔍", slug: "mystery" },
-    { name: "Science Fiction", icon: "🚀", slug: "sci-fi" },
-    { name: "Fantasy", icon: "🐉", slug: "fantasy" },
-    { name: "Romance", icon: "💕", slug: "romance" },
-    { name: "Horror", icon: "👻", slug: "horror" },
-    { name: "Young Adult", icon: "🎓", slug: "young-adult" },
-    { name: "Biography", icon: "👤", slug: "biography" },
-    { name: "Self-Help", icon: "🌟", slug: "self-help" },
-    { name: "Business", icon: "💼", slug: "business" },
-    { name: "History", icon: "🏛️", slug: "history" },
-    { name: "Cookbooks", icon: "👨‍🍳", slug: "cookbooks" },
-    { name: "Travel", icon: "✈️", slug: "travel" },
-    { name: "Technology", icon: "💻", slug: "technology" },
-    { name: "Psychology", icon: "🧠", slug: "psychology" },
+    { name: "Crying In The Shower (Fiction)", icon: "🚿😭", slug: "fiction" },
+    { name: "Unhinged Detectives (Mystery & Thriller)", icon: "🔍☕", slug: "mystery" },
+    { name: "How To Get Rich Off Memecoins (Science Fiction)", icon: "🚀🤡", slug: "sci-fi" },
+    { name: "Fantasy But Emotionally Damaged (Fantasy)", icon: "🐉💔", slug: "fantasy" },
+    { name: "Romance For People With No Riz (Romance)", icon: "💕😬", slug: "romance" },
+    { name: "Horror But It’s Just My Life (Horror)", icon: "👻📉", slug: "horror" },
+    { name: "Young Adult, Old Trauma (Young Adult)", icon: "🎓😩", slug: "young-adult" },
+    { name: "Influencer Biographies (Biography)", icon: "👤🤳", slug: "biography" },
+    { name: "Self-Help For People Who Refuse Help (Self-Help)", icon: "🌟🙃", slug: "self-help" },
+    { name: "Business Gurus And Scams (Business)", icon: "💼🤑", slug: "business" },
+    { name: "History According To Reddit (History)", icon: "🏛️📱", slug: "history" },
+    { name: "Cooking With Your GPU (Cookbooks)", icon: "👨‍🍳💻", slug: "cookbooks" },
+    { name: "Traveling To Escape My Problems (Travel)", icon: "✈️💀", slug: "travel" },
+    { name: "AI Will Take My Job (Technology)", icon: "💻🤖", slug: "technology" },
+    { name: "Overthinking For Beginners (Psychology)", icon: "🧠💭", slug: "psychology" },
   ];
+
 
   const handleLogout = () => {
     logout();
