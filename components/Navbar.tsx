@@ -31,19 +31,28 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
 
-  // Number of columns for the Book Categories dropdown.
-  // Set to 2 or 3 depending on how many columns you want.
-  const CATEGORY_COLUMNS = 3;
-  const CATEGORY_COL_WIDTH_REM = 10; // width of each column in rem
-  const DROPDOWN_PADDING_REM = 1; // left+right padding (approx)
-  const dropdownWidth = `${
-    CATEGORY_COLUMNS * CATEGORY_COL_WIDTH_REM + DROPDOWN_PADDING_REM
-  }rem`;
-  const gridTemplateColumns = `repeat(${CATEGORY_COLUMNS}, ${CATEGORY_COL_WIDTH_REM}rem)`;
-  // Margin-left to roughly center the left-most column under the trigger.
-  const leftOffset = `calc(50% - ${CATEGORY_COL_WIDTH_REM / 2}rem)`;
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
+
+  // Book categories - Top 15 most popular
+  const bookCategories = [
+    { name: "Crying In The Shower (Fiction)", icon: "🚿😭", slug: "fiction" },
+    { name: "Unhinged Detectives (Mystery & Thriller)", icon: "🔍☕", slug: "mystery" },
+    { name: "How To Get Rich Off Memecoins (Science Fiction)", icon: "🚀🤡", slug: "sci-fi" },
+    { name: "Fantasy But Emotionally Damaged (Fantasy)", icon: "🐉💔", slug: "fantasy" },
+    { name: "Romance For People With No Riz (Romance)", icon: "💕😬", slug: "romance" },
+    { name: "Horror But It’s Just My Life (Horror)", icon: "👻📉", slug: "horror" },
+    { name: "Young Adult, Old Trauma (Young Adult)", icon: "🎓😩", slug: "young-adult" },
+    { name: "Influencer Biographies (Biography)", icon: "👤🤳", slug: "biography" },
+    { name: "Self-Help For People Who Refuse Help (Self-Help)", icon: "🌟🙃", slug: "self-help" },
+    { name: "Business Gurus And Scams (Business)", icon: "💼🤑", slug: "business" },
+    { name: "History According To Reddit (History)", icon: "🏛️📱", slug: "history" },
+    { name: "Cooking With Your GPU (Cookbooks)", icon: "👨‍🍳💻", slug: "cookbooks" },
+    { name: "Traveling To Escape My Problems (Travel)", icon: "✈️💀", slug: "travel" },
+    { name: "AI Will Take My Job (Technology)", icon: "💻🤖", slug: "technology" },
+    { name: "Overthinking For Beginners (Psychology)", icon: "🧠💭", slug: "psychology" },
+  ];
+
 
   const handleLogout = () => {
     logout();
@@ -70,114 +79,75 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 transition-colors"
               >
                 Book Categories
                 <ChevronDown className="ml-1 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-gray-900 border-gray-700 p-2"
+              className="border-0 p-0 shadow-2xl overflow-hidden"
               style={{
-                marginLeft: leftOffset,
-                width: dropdownWidth,
-                // Keep dropdown within the viewport; only scroll internally when it exceeds available height
+                width: "1000px",
                 maxHeight: "calc(100vh - 6rem)",
-                overflowY: "auto",
               }}
+              align="center"
             >
-              <div className="grid gap-1" style={{ gridTemplateColumns }}>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Sad People’s Autobiographies (Biography & Memoir)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Crystal Moms & Vibe Checks (Body, Mind, & Spirit)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Capitalism 101 (Business)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Baby’s First Existential Crisis (Children's)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Hackerman Stuff (Computer & Technology)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  How to Burn Water (Cookbooks & Wine)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Glue & Glitter Addicts (Crafts & Hobbies)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Debt & Student Tears (Education)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  It’s Complicated (Family & Relationships)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Fake Stuff (Fiction)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Gym Bros & Salad (Health & Fitness)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Old Dead People (History)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  HGTV Dreams (Home & Garden)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Nightmares on Paper (Horror)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Japanese Cartoon Books (Manga & Graphic Novels)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Doctor’s Homework (Medical & Nursing)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Airport Dad Reads (Mystery & Thrillers)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Supposedly True Stuff (Non-Fiction)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Sad Rhymes (Poetry)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Arguing About Gov’t (Political Science)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Brain Hurts (Psychology)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Sky Daddy Books (Religion)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Kissing Simulator (Romance)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Space Wizards (Science Fiction)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Fix Yo Self (Self Help)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Overthinking Everything (Social Science)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Extreme Frisbee Majors (Sports & Recreation)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Escaping Ohio (Travel)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Netflix but in Print (True Crime)
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800">
-                  Angst & Acne (Young Adult)
-                </DropdownMenuItem>
-                {/* Add empty placeholders if you want equal cells, or let grid auto-fill */}
+              {/* Gradient Background Container - Inspired by SkySmile */}
+              <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 p-8">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    Explore Our Collection
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Discover your next great read from our curated categories
+                  </p>
+                </div>
+
+                {/* Categories Grid - 5 columns, 3 rows */}
+                <div className="grid grid-cols-5 gap-4">
+                  {bookCategories.map((category, idx) => (
+                    <DropdownMenuItem
+                      key={idx}
+                      onSelect={() => {
+                        handleNavigation(`/shop?category=${category.slug}`);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg text-white hover:bg-white/20 transition-all duration-300 group border border-white/20 hover:border-white/40 hover:scale-105 cursor-pointer"
+                    >
+                      <span className="text-2xl group-hover:scale-110 transition-transform">
+                        {category.icon}
+                      </span>
+                      <span className="font-medium text-sm text-left group-hover:translate-x-1 transition-transform flex-1">
+                        {category.name}
+                      </span>
+                      <svg
+                        className="ml-auto w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+
+                {/* View All Button */}
+                <div className="mt-6 text-center">
+                  <Button
+                    onClick={() => {
+                      handleNavigation("/shop");
+                    }}
+                    className="bg-white text-teal-600 hover:bg-white/90 font-semibold px-8 py-3 shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  >
+                    View All Books →
+                  </Button>
+                </div>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
