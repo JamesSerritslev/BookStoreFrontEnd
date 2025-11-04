@@ -17,6 +17,7 @@ export default function Orders() {
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<Error | null>(null)
+    const [searchQuery, setSearchQuery] = useState<string>("")
 
     const [query, setQuery] = useState<string>("")
     const [statusFilter, setStatusFilter] = useState<string>("All")
@@ -64,6 +65,18 @@ export default function Orders() {
             )
         })
     }, [orders, query, statusFilter])
+
+    // Filter orders based on search query
+    const filteredOrders = orders.filter((order) => {
+        const query = searchQuery.toLowerCase()
+        return (
+            order.id.toLowerCase().includes(query) ||
+            order.customerName.toLowerCase().includes(query) ||
+            order.status.toLowerCase().includes(query) ||
+            order.total.toString().includes(query) ||
+            new Date(order.createdAt).toLocaleDateString().toLowerCase().includes(query)
+        )
+    })
 
     return (
         <>
