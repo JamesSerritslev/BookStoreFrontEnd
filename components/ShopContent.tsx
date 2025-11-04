@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -145,10 +146,17 @@ const CATEGORIES = [
 
 export function ShopContent() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
+
+  // Initialize search term from URL params
+  useEffect(() => {
+    const query = searchParams?.get("q") || "";
+    setSearchTerm(query);
+  }, [searchParams]);
 
   const filteredAndSortedBooks = useMemo(() => {
     const filtered = DUMMY_BOOKS.filter((book) => {
