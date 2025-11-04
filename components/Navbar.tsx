@@ -67,7 +67,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
     { name: "Unhinged Detectives (Mystery & Thriller)", icon: "🔍☕", slug: "mystery" },
     { name: "How To Get Rich Off Memecoins (Science Fiction)", icon: "🚀🤡", slug: "sci-fi" },
     { name: "Fantasy But Emotionally Damaged (Fantasy)", icon: "🐉💔", slug: "fantasy" },
-    { name: "Romance For People With No Riz (Romance)", icon: "💕😬", slug: "romance" },
+    { name: "Romance For People With No Rizz (Romance)", icon: "💕😬", slug: "romance" },
     { name: "Horror But It’s Just My Life (Horror)", icon: "👻📉", slug: "horror" },
     { name: "Young Adult, Old Trauma (Young Adult)", icon: "🎓😩", slug: "young-adult" },
     { name: "Influencer Biographies (Biography)", icon: "👤🤳", slug: "biography" },
