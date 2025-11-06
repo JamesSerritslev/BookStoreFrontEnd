@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { CATEGORIES } from "@/components/ShopContent";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -61,24 +62,8 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
-  // Book categories - Top 15 most popular
-  const bookCategories = [
-    { name: "Crying In The Shower (Fiction)", icon: "🚿😭", slug: "fiction" },
-    { name: "Unhinged Detectives (Mystery & Thriller)", icon: "🔍☕", slug: "mystery" },
-    { name: "How To Get Rich Off Memecoins (Science Fiction)", icon: "🚀🤡", slug: "sci-fi" },
-    { name: "Fantasy But Emotionally Damaged (Fantasy)", icon: "🐉💔", slug: "fantasy" },
-    { name: "Romance For People With No Rizz (Romance)", icon: "💕😬", slug: "romance" },
-    { name: "Horror But It’s Just My Life (Horror)", icon: "👻📉", slug: "horror" },
-    { name: "Young Adult, Old Trauma (Young Adult)", icon: "🎓😩", slug: "young-adult" },
-    { name: "Influencer Biographies (Biography)", icon: "👤🤳", slug: "biography" },
-    { name: "Self-Help For People Who Refuse Help (Self-Help)", icon: "🌟🙃", slug: "self-help" },
-    { name: "Business Gurus And Scams (Business)", icon: "💼🤑", slug: "business" },
-    { name: "History According To Reddit (History)", icon: "🏛️📱", slug: "history" },
-    { name: "Cooking With Your GPU (Cookbooks)", icon: "👨‍🍳💻", slug: "cookbooks" },
-    { name: "Traveling To Escape My Problems (Travel)", icon: "✈️💀", slug: "travel" },
-    { name: "AI Will Take My Job (Technology)", icon: "💻🤖", slug: "technology" },
-    { name: "Overthinking For Beginners (Psychology)", icon: "🧠💭", slug: "psychology" },
-  ];
+  // Reuse categories from ShopContent so navbar and shop use the same options
+  const bookCategories = CATEGORIES;
 
 
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -186,35 +171,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
                   </p>
                 </div>
 
-                {/* Categories Grid - 5 columns, 3 rows */}
-                <div className="grid grid-cols-5 gap-4">
+                {/* Categories Grid - reuse CATEGORIES from ShopContent */}
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {bookCategories.map((category, idx) => (
                     <DropdownMenuItem
                       key={idx}
                       onSelect={() => {
-                        handleNavigation(`/shop?category=${category.slug}`);
+                        // Navigate to shop with the selected category as a query param
+                        handleNavigation(`/shop?category=${encodeURIComponent(category)}`);
                       }}
-                      className="flex items-center gap-3 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg text-white hover:bg-white/20 transition-all duration-300 group border border-white/20 hover:border-white/40 hover:scale-105 cursor-pointer"
+                      className="px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg text-white hover:bg-white/20 transition-all duration-300 group border border-white/20 hover:border-white/40 hover:scale-105 cursor-pointer text-sm text-left"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">
-                        {category.icon}
-                      </span>
-                      <span className="font-medium text-sm text-left group-hover:translate-x-1 transition-transform flex-1">
-                        {category.name}
-                      </span>
-                      <svg
-                        className="ml-auto w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
+                      <span className="font-medium truncate">{category}</span>
                     </DropdownMenuItem>
                   ))}
                 </div>
