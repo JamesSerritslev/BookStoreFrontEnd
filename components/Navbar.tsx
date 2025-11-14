@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import AddNewBookButton from "@/components/AddNewBookButton";
+import { getCart } from "@/lib/api/cart";
 
 interface NavbarProps {
   isSignedIn?: boolean;
@@ -30,9 +33,30 @@ interface NavbarProps {
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
+
+  // Fetch cart count when user is authenticated
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (isAuthenticated) {
+        try {
+          const cart = await getCart();
+          const totalItems = cart.items.reduce((sum, item) => sum + item.qty, 0);
+          setCartItemCount(totalItems);
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+          setCartItemCount(0);
+        }
+      } else {
+        setCartItemCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, [isAuthenticated]);
 
   // Book categories - Top 15 most popular
   const bookCategories = [
@@ -180,10 +204,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
 
               {/* User Menu */}
@@ -287,10 +319,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
             </div>
           )}
