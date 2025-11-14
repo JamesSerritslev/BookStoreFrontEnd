@@ -95,35 +95,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
 
     try {
-      const url = getApiUrl("/api/v1/auth/login");
-      console.log("Login URL:", url);
-      console.log("Login credentials:", credentials);
-      
-      const response = await fetch(url, {
+      const response = await fetch(getApiUrl("/api/v1/auth/login"), {
         method: "POST",
         headers: getApiHeaders(false), // No auth needed for login
         body: JSON.stringify(credentials),
       });
 
-      console.log("Login response status:", response.status);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Login error response:", errorData);
         throw new Error(errorData.error || "Login failed");
       }
 
       const data: AuthResponse = await response.json();
-      console.log("Login response data:", data);
 
       // Store token and user data
       setToken(data.token);
       setUser(data.user);
       setTokenToStorage(data.token);
       setUserToStorage(data.user);
-      
-      console.log("Token and user stored. Token:", data.token?.substring(0, 50) + "...");
-      console.log("User:", data.user);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed";
       setError(errorMessage);

@@ -10,10 +10,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
 
-    // Debug logging
-    console.log("Login attempt:", { email, password });
-    console.log("Available users:", mockStore.users.map(u => ({ email: u.email, password: u.password })));
-
     // Validation
     if (!email || !password) {
       return NextResponse.json(
@@ -32,7 +28,6 @@ export async function POST(request: NextRequest) {
     );
 
     if (!user) {
-      console.log("Login failed: No matching user found");
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }

@@ -37,7 +37,7 @@ export function getApiHeaders(includeAuth: boolean = true): HeadersInit {
   };
 
   if (includeAuth && typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("bookhub_token"); // Match the key used in lib/jwt.ts
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
