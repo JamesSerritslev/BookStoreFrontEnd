@@ -155,7 +155,7 @@ export default function Orders() {
                     <tr key={order.id} className="border-t border-gray-800 last:border-b-0 hover:bg-gray-800">
                       <td className="px-6 py-4 text-sm text-gray-100">{order.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-200">{order.customerName}</td>
-                      <td className="px-6 py-4 text-sm text-gray-100">${(order.total / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-100">${order.total.toFixed(2)}</td>
                       <td className="px-6 py-4 text-sm text-gray-200">{new Date(order.createdAt).toLocaleString()}</td>
                       <td className="px-6 py-4 text-sm font-semibold">
                         <span className={`px-3 py-1 rounded-full text-xs ${
