@@ -62,10 +62,10 @@ export async function PATCH(
       );
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
+  const userId = decoded.userId;
 
-    // Check ownership or admin
-    if (review.userId !== userId && decoded.role !== "ADMIN") {
+  // Check ownership or admin (mock reviews store userId as number)
+  if (review.userId !== userId && decoded.role !== "ADMIN") {
       return NextResponse.json(
         {
           success: false,
@@ -168,10 +168,10 @@ export async function DELETE(
     }
 
     const review = mockStore.reviews[reviewIndex];
-    const userId = mockStore.userIdToUUID(decoded.userId);
+  const userId = decoded.userId;
 
-    // Check ownership or admin
-    if (review.userId !== userId && decoded.role !== "ADMIN") {
+  // Check ownership or admin (mock reviews store userId as number)
+  if (review.userId !== userId && decoded.role !== "ADMIN") {
       return NextResponse.json(
         {
           success: false,

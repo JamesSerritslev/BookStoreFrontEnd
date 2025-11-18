@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
+  const userId = decoded.userId; // numeric user id from token
     let userOrders;
 
     // Filter orders based on user role
@@ -48,12 +48,10 @@ export async function GET(request: NextRequest) {
       userOrders = mockStore.orders;
     } else if (decoded.role === "SELLER") {
       // Sellers see orders for books THEY listed
-      userOrders = mockStore.orders.filter(
-        (order) => order.sellerId === userId
-      );
+      userOrders = mockStore.orders.filter((order) => order.sellerId === userId);
     } else {
       // Buyers see orders THEY placed
-      userOrders = mockStore.orders.filter((order) => order.userId === userId);
+  userOrders = mockStore.orders.filter((order) => order.userId === userId);
     }
 
     // Format response per contract

@@ -38,10 +38,10 @@ export async function GET(
     const size = parseInt(searchParams.get("size") || "10");
     const sort = searchParams.get("sort") || "createdAt,DESC";
 
-    const bookIdUUID = mockStore.bookIdToUUID(parseInt(params.bookId));
+  const bookIdUUID = mockStore.bookIdToUUID(parseInt(params.bookId));
 
-    // Filter reviews for this book
-    let bookReviews = mockStore.reviews.filter((r) => r.bookId === bookIdUUID);
+  // Filter reviews for this book
+  let bookReviews = mockStore.reviews.filter((r) => r.bookId === bookIdUUID);
 
     // Sort
     const [sortField, sortOrder] = sort.split(",");
@@ -162,10 +162,10 @@ export async function POST(
       );
     }
 
-    const bookIdUUID = mockStore.bookIdToUUID(parseInt(params.bookId));
-    const userId = mockStore.userIdToUUID(decoded.userId);
+  const bookIdUUID = mockStore.bookIdToUUID(parseInt(params.bookId));
+  const userId = decoded.userId;
 
-    // Check if user already reviewed this book
+    // Check if user already reviewed this book (mock reviews store userId as number)
     const existingReview = mockStore.reviews.find(
       (r) => r.bookId === bookIdUUID && r.userId === userId
     );

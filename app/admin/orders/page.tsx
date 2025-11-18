@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { apiFetch } from "@/lib/config";
 
 type Order = {
   id: string;
@@ -20,10 +23,27 @@ export default function Orders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch("/api/orders");
-        if (!response.ok) throw new Error("Failed to fetch orders");
-        const data: Order[] = await response.json();
-        setOrders(data);
+        // Use apiFetch which respects mock mode and API base URL
+        const data: any = await apiFetch("/api/v1/order");
+
+        // The mock API returns { userId, role, orders: [...] }
+        const rawOrders: any[] = Array.isArray(data)
+          ? data
+          : data?.orders ?? [];
+
+        // Map whatever the mock returns into the shape used by this page
+        const mapped: Order[] = (rawOrders || []).map((o: any) => ({
+          id: o.orderId || o.id || String(Math.random()),
+          amount: o.total ?? o.amount ?? 0,
+          customerName:
+            o.customerName || o.customerName?.name || o.userId || "Unknown",
+          createdAt: o.placedAt || o.createdAt || new Date().toISOString(),
+          total: o.total ?? o.amount ?? 0,
+          status: o.status ?? "Processing",
+          date: o.placedAt || o.createdAt || "",
+        }));
+
+        setOrders(mapped);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err);
@@ -37,9 +57,22 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
-  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Navbar />
+        <div className="p-6 text-gray-400">Loading orders...</div>
+        <Footer />
+      </div>
+    );
   if (error)
-    return <div className="p-4 text-red-500">Error: {error.message}</div>;
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Navbar />
+        <div className="p-6 text-red-400">Error: {error.message}</div>
+        <Footer />
+      </div>
+    );
 
   // Filter orders based on search query
   const filteredOrders = orders.filter((order) => {
@@ -57,24 +90,28 @@ export default function Orders() {
   });
 
   return (
-    <>
-      <div className="p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">
-            Orders (MOCK DATA NOT FROM DATABASE)
-          </h1>
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+        <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Orders</h1>
+            <p className="text-sm text-gray-400 mt-1">(Using mock API)</p>
+          </div>
+
           <div className="flex items-center gap-4">
             <input
               type="text"
               placeholder="Search orders by ID, customer, status, amount, or date..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-96"
+              className="px-4 py-2 border border-gray-700 rounded-md bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 w-80"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-gray-300 hover:text-white border border-gray-700 rounded-md bg-gray-900"
               >
                 Clear
               </button>
@@ -82,86 +119,67 @@ export default function Orders() {
           </div>
         </div>
 
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">
-              {searchQuery
-                ? `No orders found matching "${searchQuery}"`
-                : "No orders found."}
-            </p>
-            {searchQuery && orders.length > 0 && (
-              <p className="text-sm text-gray-400 mt-2">
-                Showing 0 of {orders.length} orders
+        <div className="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
+          {filteredOrders.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400">
+                {searchQuery
+                  ? `No orders found matching "${searchQuery}"`
+                  : "No orders found."}
               </p>
-            )}
-          </div>
-        ) : (
-          <>
-            {searchQuery && (
-              <p className="text-sm text-gray-600 mb-4">
-                Showing {filteredOrders.length} of {orders.length} orders
-              </p>
-            )}
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2">Order ID</th>
-                  <th className="border border-gray-300 px-4 py-2">Customer</th>
-                  <th className="border border-gray-300 px-4 py-2">Amount</th>
-                  <th className="border border-gray-300 px-4 py-2">Date</th>
-                  <th className="border border-gray-300 px-4 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order: Order) => (
-                  <tr key={order.id}>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {order.id}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {order.customerName}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      ${order.total}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td
-                      className={`border border-gray-300 px-4 py-2 font-semibold ${
-                        order.status === "Completed"
-                          ? "text-green-600"
-                          : order.status === "Pending"
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {order.status}
-                    </td>
+              {searchQuery && orders.length > 0 && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Showing 0 of {orders.length} orders
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              {searchQuery && (
+                <p className="text-sm text-gray-400 mb-4 px-6 pt-6">
+                  Showing {filteredOrders.length} of {orders.length} orders
+                </p>
+              )}
+              <table className="w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-900">
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Order ID</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Customer</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Amount</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Date</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-      </div>
-    </>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order: Order) => (
+                    <tr key={order.id} className="border-t border-gray-800 last:border-b-0 hover:bg-gray-800">
+                      <td className="px-6 py-4 text-sm text-gray-100">{order.id}</td>
+                      <td className="px-6 py-4 text-sm text-gray-200">{order.customerName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-100">${(order.total / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-200">{new Date(order.createdAt).toLocaleString()}</td>
+                      <td className="px-6 py-4 text-sm font-semibold">
+                        <span className={`px-3 py-1 rounded-full text-xs ${
+                          order.status === "Delivered" || order.status === "Completed"
+                            ? "bg-green-900 text-green-300"
+                            : order.status === "Pending" || order.status === "Processing" || order.status === "Shipped"
+                            ? "bg-yellow-900 text-yellow-300"
+                            : "bg-red-900 text-red-300"
+                        }`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const base =
-    "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold";
-  if (status === "Completed")
-    return (
-      <span className={`${base} bg-green-900 text-green-300`}>{status}</span>
-    );
-  if (status === "Pending")
-    return (
-      <span className={`${base} bg-yellow-900 text-yellow-300`}>{status}</span>
-    );
-  if (status === "Cancelled")
-    return <span className={`${base} bg-red-900 text-red-300`}>{status}</span>;
-  return <span className={`${base} bg-gray-800 text-gray-300`}>{status}</span>;
-}
 // ...existing code...

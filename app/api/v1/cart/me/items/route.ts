@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
-    const cart = mockStore.getOrCreateCart(userId);
+  const userId = decoded.userId;
+  const cart = mockStore.getOrCreateCart(String(userId));
 
     // Check if item already exists in cart
     const existingItem = cart.items.find(

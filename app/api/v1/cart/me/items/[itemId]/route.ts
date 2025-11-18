@@ -80,8 +80,8 @@ export async function PATCH(
       );
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
-    const cart = mockStore.getOrCreateCart(userId);
+  const userId = decoded.userId;
+  const cart = mockStore.getOrCreateCart(String(userId));
 
     // Find item
     const item = cart.items.find((i) => i.itemId === params.itemId);
@@ -148,8 +148,8 @@ export async function DELETE(
       );
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
-    const cart = mockStore.getOrCreateCart(userId);
+  const userId = decoded.userId;
+  const cart = mockStore.getOrCreateCart(String(userId));
 
     // Find and remove item
     const itemIndex = cart.items.findIndex((i) => i.itemId === params.itemId);

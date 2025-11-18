@@ -50,10 +50,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
+  const userId = decoded.userId;
 
-    // Get cart to determine seller from items
-    const cart = mockStore.carts.get(userId);
+  // Get cart to determine seller from items (carts are keyed by stringified user id)
+  const cart = mockStore.carts.get(String(userId));
     if (!cart || cart.items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     const newOrder = {
       orderId: mockStore.generateUUID(),
       userId,
-      sellerId: book.sellerId, // Track which seller gets this order
+      sellerId: book.sellerId, // Track which seller gets this order (numeric)
       cartId,
       itemCount,
       total: Number(total),

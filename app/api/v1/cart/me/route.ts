@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userId = mockStore.userIdToUUID(decoded.userId);
-    const cart = mockStore.getOrCreateCart(userId);
+  const userId = decoded.userId; // numeric
+  const cart = mockStore.getOrCreateCart(String(userId));
 
     return NextResponse.json(
       {

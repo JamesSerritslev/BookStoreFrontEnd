@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new book with seller ID
-    const sellerId = mockStore.userIdToUUID(decoded.userId);
+    // Create new book with numeric seller ID
+    const sellerId = decoded.userId;
 
     const newBook = {
       bookId: mockStore.getNextBookId(),
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       bookDescription,
       bookPrice: Number(bookPrice),
       bookPicture,
-      sellerId, // Track who listed this book
+      sellerId, // Track who listed this book (numeric id)
       createdAt: new Date().toISOString(),
     };
 
