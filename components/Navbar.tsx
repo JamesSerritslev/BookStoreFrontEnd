@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES } from "@/components/ShopContent";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +25,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import AddNewBookButton from "@/components/AddNewBookButton";
-import { useRef } from "react";
-import { fetchAllBooks } from "@/lib/api";
+import { getCart } from "@/lib/api/cart";
 
 interface NavbarProps {
   isSignedIn?: boolean;
@@ -35,91 +34,13 @@ interface NavbarProps {
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState<string>("");
-
-  // Initialize search query from URL params if available
-  useEffect(() => {
-    const query = searchParams?.get("q") || "";
-    setSearchQuery(query);
-  }, [searchParams]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to shop page with search query
-      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      // If empty, just go to shop
-      router.push("/shop");
-    }
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
   // Reuse categories from ShopContent so navbar and shop use the same options
   const bookCategories = CATEGORIES;
-
-
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<any[]>([]);
-  const [allBooks, setAllBooks] = useState<any[]>([]);
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  // Fetch all books on mount for search suggestions
-  useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const books = await fetchAllBooks();
-        setAllBooks(books);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      }
-    };
-    loadBooks();
-  }, []);
-
-  // Filter suggestions based on search query
-  useEffect(() => {
-    if (searchQuery.trim() && allBooks.length > 0) {
-      const query = searchQuery.toLowerCase().trim();
-      const filtered = allBooks
-        .filter((book: any) => {
-          const title = (book.title || "").toLowerCase();
-          const author = (book.author || "").toLowerCase();
-          const isbn = (book.isbn || "").toLowerCase();
-          return title.includes(query) || author.includes(query) || isbn.includes(query);
-        })
-        .slice(0, 8); // Show top 8 results
-      setFilteredSuggestions(filtered);
-      // Show suggestions if there are results and input is focused
-      if (filtered.length > 0) {
-        setShowSuggestions(true);
-      }
-    } else {
-      setFilteredSuggestions([]);
-      if (!searchQuery.trim()) {
-        setShowSuggestions(false);
-      }
-    }
-  }, [searchQuery, allBooks]);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
 
   const handleLogout = () => {
     logout();
@@ -202,60 +123,14 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Search Bar with Hover Suggestions */}
-          <div className="relative" ref={searchRef}>
-            <form onSubmit={handleSearch} className="relative">
-              <div className="relative flex items-center">
-                <Input
-                  type="text"
-                  placeholder="Search Bookhub by Title, Author or ISBN"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={() => {
-                    if (filteredSuggestions.length > 0) {
-                      setShowSuggestions(true);
-                    }
-                  }}
-                  className="w-80 bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-teal-400 pr-10"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 p-1 text-gray-400 hover:text-teal-400 transition-colors z-10"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-              </div>
-            </form>
-
-            {/* Hover Dropdown Results */}
-            {showSuggestions && filteredSuggestions.length > 0 && (
-              <div className="absolute z-[100] top-full mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-96 overflow-y-auto">
-                <ul className="py-1">
-                  {filteredSuggestions.map((book: any, idx: number) => (
-                    <li
-                      key={book.bookId || book.id || idx}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        router.push(`/shop?q=${encodeURIComponent(book.title || "")}`);
-                        setShowSuggestions(false);
-                        setSearchQuery(book.title || "");
-                      }}
-                      className="px-4 py-3 text-white hover:bg-gray-800 cursor-pointer transition-colors border-b border-gray-800 last:border-b-0"
-                    >
-                      <div className="font-medium">{book.title}</div>
-                      {book.author && (
-                        <div className="text-sm text-gray-400 mt-1">
-                          by {book.author}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {/* Search Bar */}
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search Bookhub by Title, Author or ISBN"
+              className="w-80 bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-teal-400"
+            />
           </div>
-
 
           {/* Auth Section */}
           {userIsSignedIn ? (
@@ -277,10 +152,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
 
               {/* User Menu */}
@@ -332,7 +215,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
                   {hasRole("SELLER", "ADMIN") && (
                     <DropdownMenuItem
-                      onSelect={() => handleNavigation("/admin/manageBooks")}
+                      onSelect={() => handleNavigation("/admin")}
                       className="text-white hover:bg-gray-800 cursor-pointer"
                     >
                       <Package className="h-4 w-4 mr-2" />
@@ -384,10 +267,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
             </div>
           )}

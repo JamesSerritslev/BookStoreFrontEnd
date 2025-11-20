@@ -20,7 +20,7 @@ import {
   isTokenValid,
   hasAnyRole,
 } from "@/lib/jwt";
-import { API_CONFIG, apiRequest } from "@/lib/config";
+import { getApiUrl, getApiHeaders } from "@/lib/config";
 
 interface AuthContextType {
   // State
@@ -89,89 +89,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
   }, []);
 
-  // Login function - ready for backend integration
+  // Login function - Uses real API
   const login = async (credentials: LoginCredentials): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Backend team - Replace this mock implementation with:
-      // const response = await fetch('/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(credentials)
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
-      // setToken(data.token); setUser(data.user); etc.
+      const response = await fetch(getApiUrl("/api/v1/auth/login"), {
+        method: "POST",
+        headers: getApiHeaders(false), // No auth needed for login
+        body: JSON.stringify(credentials),
+      });
 
-      // MOCK DATA - Remove when backend is ready
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-
-      // Mock authentication - replace with actual API response
-      if (
-        credentials.email === "admin@bookhub.com" &&
-        credentials.password === "admin123"
-      ) {
-        const mockAuthResponse: AuthResponse = {
-          token: "mock.jwt.token.admin",
-          user: {
-            id: 1,
-            email: credentials.email,
-            firstName: "Admin",
-            lastName: "User",
-            role: "ADMIN",
-          },
-        };
-
-        setToken(mockAuthResponse.token);
-        setUser(mockAuthResponse.user);
-        setTokenToStorage(mockAuthResponse.token);
-        setUserToStorage(mockAuthResponse.user);
-        return; // Exit function after successful login
-      } else if (
-        credentials.email === "seller@bookhub.com" &&
-        credentials.password === "seller123"
-      ) {
-        const mockAuthResponse: AuthResponse = {
-          token: "mock.jwt.token.seller",
-          user: {
-            id: 2,
-            email: credentials.email,
-            firstName: "Seller",
-            lastName: "User",
-            role: "SELLER",
-          },
-        };
-
-        setToken(mockAuthResponse.token);
-        setUser(mockAuthResponse.user);
-        setTokenToStorage(mockAuthResponse.token);
-        setUserToStorage(mockAuthResponse.user);
-        return; // Exit function after successful login
-      } else if (
-        credentials.email === "buyer@bookhub.com" &&
-        credentials.password === "buyer123"
-      ) {
-        const mockAuthResponse: AuthResponse = {
-          token: "mock.jwt.token.buyer",
-          user: {
-            id: 3,
-            email: credentials.email,
-            firstName: "Buyer",
-            lastName: "User",
-            role: "BUYER",
-          },
-        };
-
-        setToken(mockAuthResponse.token);
-        setUser(mockAuthResponse.user);
-        setTokenToStorage(mockAuthResponse.token);
-        setUserToStorage(mockAuthResponse.user);
-        return; // Exit function after successful login
-      } else {
-        throw new Error("Invalid email or password");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Login failed");
       }
+
+      const data: AuthResponse = await response.json();
+
+      // Store token and user data
+      setToken(data.token);
+      setUser(data.user);
+      setTokenToStorage(data.token);
+      setUserToStorage(data.user);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed";
       setError(errorMessage);
@@ -181,41 +122,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Register function - ready for backend integration
+  // Register function - Uses real API
   const register = async (data: RegisterData): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Backend team - Replace this mock implementation with:
-      // const response = await fetch('/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data)
-      // });
-      // const authData = await response.json();
-      // if (!response.ok) throw new Error(authData.message);
-      // setToken(authData.token); setUser(authData.user); etc.
+      const response = await fetch(getApiUrl("/api/v1/auth/register"), {
+        method: "POST",
+        headers: getApiHeaders(false), // No auth needed for registration
+        body: JSON.stringify(data),
+      });
 
-      // MOCK DATA - Remove when backend is ready
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Registration failed");
+      }
 
-      // Mock registration - auto-login after successful registration
-      const mockAuthResponse: AuthResponse = {
-        token: "mock.jwt.token.newuser",
-        user: {
-          id: Math.floor(Math.random() * 1000) + 100, // Random ID
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: data.role || "BUYER", // Default to BUYER
-        },
-      };
+      const authData: AuthResponse = await response.json();
 
-      setToken(mockAuthResponse.token);
-      setUser(mockAuthResponse.user);
-      setTokenToStorage(mockAuthResponse.token);
-      setUserToStorage(mockAuthResponse.user);
+      // Store token and user data (auto-login after registration)
+      setToken(authData.token);
+      setUser(authData.user);
+      setTokenToStorage(authData.token);
+      setUserToStorage(authData.user);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Registration failed";
