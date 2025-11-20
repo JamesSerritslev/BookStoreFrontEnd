@@ -41,7 +41,7 @@ interface ApiUser {
   role: string;
 }
 
-interface ApiBook {
+export interface ApiBook {
   bookId: number;
   bookName: string;
   bookDescription: string;
@@ -225,6 +225,16 @@ export async function createNewBook(book: Omit<ApiBook, "bookId">): Promise<ApiB
     return created;
   }
   return requestJson<ApiBook>("/api/v1/book", { method: "POST", jsonBody: book });
+}
+
+export async function updateBookById(bookId: number, book: Partial<Omit<ApiBook, "bookId">>): Promise<ApiBook> {
+  if (USE_MOCK_DATA) {
+    const i = mockDb.books.findIndex(b => b.bookId === bookId);
+    if (i === -1) throw new Error("Book not found");
+    mockDb.books[i] = { ...mockDb.books[i], ...book };
+    return mockDb.books[i];
+  }
+  return requestJson<ApiBook>(`/api/v1/book/${bookId}`, { method: "PUT", jsonBody: book });
 }
 
 export async function removeBookById(bookId: number): Promise<void> {

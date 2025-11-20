@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,126 +11,106 @@ import { addToCart } from "@/lib/api/cart";
 import { useToast } from "@/hooks/use-toast";
 
 const DUMMY_BOOKS = [
-    {
-        id: 1,
-        title: "The Rizzonomicon",
-        subtitle: "How to Up Your Game and NPC-Proof Your Life",
-        author: "Chad Thundercock",
-        price: 24.99,
-        originalPrice: 29.99,
-        rating: 4.5,
-        reviews: 1247,
-        category: "Self-Help",
-        cover:
-            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: true,
-    },
-    {
-        id: 2,
-        title: "Sigma Grinset for Dummies",
-        subtitle: "How to Start Your Own Successful Business",
-        author: "Business Guru",
-        price: 19.99,
-        originalPrice: 24.99,
-        rating: 4.2,
-        reviews: 892,
-        category: "Business",
-        cover:
-            "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: false,
-    },
-    {
-        id: 3,
-        title: "Improve Your Jawline",
-        subtitle: "A Step-by-Step Guide",
-        author: "Dr. Strong Jaw",
-        price: 16.99,
-        originalPrice: null,
-        rating: 4.0,
-        reviews: 543,
-        category: "Health & Fitness",
-        cover:
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: true,
-    },
-    {
-        id: 4,
-        title: "Digital Marketing Mastery",
-        subtitle: "From Zero to Hero in 30 Days",
-        author: "Marketing Maven",
-        price: 32.99,
-        originalPrice: 39.99,
-        rating: 4.7,
-        reviews: 2156,
-        category: "Marketing",
-        cover:
-            "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: false,
-    },
-    {
-        id: 5,
-        title: "The Art of Procrastination",
-        subtitle: "Why Doing Nothing Gets Everything Done",
-        author: "Lazy Genius",
-        price: 21.99,
-        originalPrice: null,
-        rating: 3.8,
-        reviews: 678,
-        category: "Psychology",
-        cover:
-            "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
-        inStock: false,
-        featured: false,
-    },
-    {
-        id: 6,
-        title: "Cooking for Gamers",
-        subtitle: "Quick Meals Between Matches",
-        author: "Chef Noob",
-        price: 18.99,
-        originalPrice: 22.99,
-        rating: 4.3,
-        reviews: 1034,
-        category: "Cooking",
-        cover:
-            "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: false,
-    },
-    {
-        id: 7,
-        title: "Cryptocurrency for Beginners",
-        subtitle: "Understanding the Digital Gold Rush",
-        author: "Crypto King",
-        price: 27.99,
-        originalPrice: 34.99,
-        rating: 4.1,
-        reviews: 1567,
-        category: "Finance",
-        cover:
-            "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: true,
-    },
-    {
-        id: 8,
-        title: "Mindfulness in the Digital Age",
-        subtitle: "Finding Peace in a Connected World",
-        author: "Zen Master",
-        price: 23.99,
-        originalPrice: null,
-        rating: 4.6,
-        reviews: 987,
-        category: "Self-Help",
-        cover:
-            "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
-        inStock: true,
-        featured: false,
-    },
+  {
+    id: 1,
+    title: "The Rizzonomicon",
+    subtitle: "How to Up Your Game and NPC-Proof Your Life",
+    author: "Chad Thundercock",
+    price: 24.99,
+    originalPrice: 29.99,
+    rating: 4.5,
+    reviews: 1247,
+    category: "Self-Help",
+    cover: "/images/RizzMemeBookCover.png",
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: 2,
+    title: "Sigma Grindset for Dummies",
+    subtitle: "How to Start Your Own Successful Business",
+    author: "Business Guru",
+    price: 19.99,
+    originalPrice: 24.99,
+    rating: 4.2,
+    reviews: 892,
+    category: "Business",
+    cover: "/images/SigmaGrindsetForDummies.png",
+    inStock: true,
+    featured: false,
+  },
+  {
+    id: 3,
+    title: "Improve Your Jawline",
+    subtitle: "A Step-by-Step Guide",
+    author: "Dr. Strong Jaw",
+    price: 16.99,
+    originalPrice: null,
+    rating: 4.0,
+    reviews: 543,
+    category: "Health & Fitness",
+    cover: "/images/improvejawlineguide.png",
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: 4,
+    title: "How To Talk To Women As a Computer Science Major",
+    subtitle: "A Comprehensive Guide",
+    author: "Alex Codeworth",
+    price: 32.99,
+    originalPrice: 39.99,
+    rating: 4.7,
+    reviews: 2156,
+    category: "Dating & Relationships",
+    cover: "/images/TalkingToWomenComputerScience.png",
+    inStock: true,
+    featured: false,
+  },
+  {
+    id: 6,
+    title: "Cooking for Gamers",
+    subtitle: "Quick Meals Between Matches",
+    author: "Chef Noob",
+    price: 18.99,
+    originalPrice: 22.99,
+    rating: 4.3,
+    reviews: 1034,
+    category: "Cooking",
+    cover:
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=600&fit=crop",
+    inStock: true,
+    featured: false,
+  },
+  {
+    id: 7,
+    title: "Cryptocurrency for Beginners",
+    subtitle: "Understanding the Digital Gold Rush",
+    author: "Crypto King",
+    price: 27.99,
+    originalPrice: 34.99,
+    rating: 4.1,
+    reviews: 1567,
+    category: "Finance",
+    cover: "/images/CryptoCurrencyForBeginners.png",
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: 8,
+    title: "Mindfulness in the Digital Age",
+    subtitle: "Finding Peace in a Connected World",
+    author: "Zen Master",
+    price: 23.99,
+    originalPrice: null,
+    rating: 4.6,
+    reviews: 987,
+    category: "Self-Help",
+    cover:
+      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
+    inStock: true,
+    featured: false,
+  },
 ];
 
 const CATEGORIES = [
@@ -144,23 +125,29 @@ const CATEGORIES = [
 ];
 
 export function ShopContent() {
-    const { toast } = useToast();
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [sortBy, setSortBy] = useState("featured");
-    const [addingToCart, setAddingToCart] = useState<number | null>(null);
+  const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("featured");
+  const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
-    const filteredAndSortedBooks = useMemo(() => {
-        const filtered = DUMMY_BOOKS.filter((book) => {
-            const matchesSearch =
-                book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                book.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory =
-                selectedCategory === "All" || book.category === selectedCategory;
-            return matchesSearch && matchesCategory;
-        });
+  // Initialize search term from URL params
+  useEffect(() => {
+    const query = searchParams?.get("q") || "";
+    setSearchTerm(query);
+  }, [searchParams]);
 
+  const filteredAndSortedBooks = useMemo(() => {
+    const filtered = DUMMY_BOOKS.filter((book) => {
+      const matchesSearch =
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "All" || book.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
         // Sort books
         filtered.sort((a, b) => {
             switch (sortBy) {

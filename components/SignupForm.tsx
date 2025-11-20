@@ -69,8 +69,10 @@ export default function SignupForm() {
         password: formData.password,
         role: formData.role,
       });
-      // Redirect to dashboard on successful registration
-      router.push("/dashboard");
+      // Wait for state to propagate, then redirect
+      setTimeout(() => {
+        router.replace("/dashboard");
+      }, 200);
     } catch (err) {
       // Error is handled by the auth context
       console.error("Registration failed:", err);

@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import AddNewBookButton from "@/components/AddNewBookButton";
+import { getCart } from "@/lib/api/cart";
 
 interface NavbarProps {
   isSignedIn?: boolean;
@@ -30,17 +33,39 @@ interface NavbarProps {
 export default function Navbar({ isSignedIn }: NavbarProps) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   // Use auth context if isSignedIn prop is not provided
   const userIsSignedIn = isSignedIn ?? isAuthenticated;
 
+  // Fetch cart count when user is authenticated
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (isAuthenticated) {
+        try {
+          const cart = await getCart();
+          const totalItems = cart.items.reduce((sum, item) => sum + item.qty, 0);
+          setCartItemCount(totalItems);
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+          setCartItemCount(0);
+        }
+      } else {
+        setCartItemCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, [isAuthenticated]);
+
   // Book categories - Top 15 most popular
   const bookCategories = [
+
     { name: "Crying In The Shower (Fiction)", icon: "🚿😭", slug: "fiction" },
     { name: "Unhinged Detectives (Mystery & Thriller)", icon: "🔍☕", slug: "mystery" },
     { name: "How To Get Rich Off Memecoins (Science Fiction)", icon: "🚀🤡", slug: "sci-fi" },
     { name: "Fantasy But Emotionally Damaged (Fantasy)", icon: "🐉💔", slug: "fantasy" },
-    { name: "Romance For People With No Riz (Romance)", icon: "💕😬", slug: "romance" },
+    { name: "Romance For People With No Rizz (Romance)", icon: "💕😬", slug: "romance" },
     { name: "Horror But It’s Just My Life (Horror)", icon: "👻📉", slug: "horror" },
     { name: "Young Adult, Old Trauma (Young Adult)", icon: "🎓😩", slug: "young-adult" },
     { name: "Influencer Biographies (Biography)", icon: "👤🤳", slug: "biography" },
@@ -52,7 +77,6 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
     { name: "AI Will Take My Job (Technology)", icon: "💻🤖", slug: "technology" },
     { name: "Overthinking For Beginners (Psychology)", icon: "🧠💭", slug: "psychology" },
   ];
-
 
   const handleLogout = () => {
     logout();
@@ -181,10 +205,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
 
               {/* User Menu */}
@@ -236,7 +268,7 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
                   {hasRole("SELLER", "ADMIN") && (
                     <DropdownMenuItem
-                      onSelect={() => handleNavigation("/inventory")}
+                      onSelect={() => handleNavigation("/admin")}
                       className="text-white hover:bg-gray-800 cursor-pointer"
                     >
                       <Package className="h-4 w-4 mr-2" />
@@ -288,10 +320,18 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-teal-400 hover:bg-gray-800"
+                className="text-white hover:text-teal-400 hover:bg-gray-800 relative"
                 onClick={() => handleNavigation("/cart")}
               >
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-teal-500 hover:bg-teal-600 border-0"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
               </Button>
             </div>
           )}

@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { User } from "@/lib/jwt";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { addToCart } from "@/lib/api/cart"; 
 
 export default function Dashboard() {
   return (
@@ -186,149 +187,19 @@ function StatsCards({
   );
 }
 
-function DashboardSections({
-  hasRole,
-  router,
-}: {
-  hasRole: (...roles: string[]) => boolean;
-  router: any;
-}) {
+function DashboardSections({ hasRole, router }: { hasRole: (...roles: string[]) => boolean; router: any }) {
+  async function handleAddToCart(inventoryId: string) {
+    try {
+      await addToCart(inventoryId, 1);
+      alert("✅ Added to cart!");
+    } catch (error: any) {
+      alert("❌ Failed to add to cart: " + error.message);
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Recent Activity - Available to all users */}
-      <Card className="bg-gray-900 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-white">Recent Activity</CardTitle>
-          <CardDescription className="text-gray-400">
-            Your latest interactions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {hasRole("ADMIN") && (
-              <>
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm">Reviewed user reports</p>
-                    <p className="text-gray-400 text-xs">1 hour ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm">
-                      Updated platform settings
-                    </p>
-                    <p className="text-gray-400 text-xs">3 hours ago</p>
-                  </div>
-                </div>
-              </>
-            )}
-            {hasRole("SELLER", "ADMIN") && (
-              <>
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm">
-                      Added new book to inventory
-                    </p>
-                    <p className="text-gray-400 text-xs">2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm">Processed 3 new orders</p>
-                    <p className="text-gray-400 text-xs">4 hours ago</p>
-                  </div>
-                </div>
-              </>
-            )}
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-teal-400 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-white text-sm">
-                  Added "The Great Gatsby" to wishlist
-                </p>
-                <p className="text-gray-400 text-xs">2 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-teal-400 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-white text-sm">
-                  Purchased "1984" by George Orwell
-                </p>
-                <p className="text-gray-400 text-xs">1 day ago</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Second Card - Role-based content */}
-      {hasRole("ADMIN") && (
-        <Card className="bg-gray-900 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white">Admin Controls</CardTitle>
-            <CardDescription className="text-gray-400">
-              Platform management tools
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
-                <Users className="h-4 w-4 mr-2" />
-                Manage Users
-              </Button>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                <Package className="h-4 w-4 mr-2" />
-                Manage Inventory
-              </Button>
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                View Analytics
-              </Button>
-              <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white">
-                <Settings className="h-4 w-4 mr-2" />
-                Platform Settings
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {hasRole("SELLER") && !hasRole("ADMIN") && (
-        <Card className="bg-gray-900 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white">Seller Tools</CardTitle>
-            <CardDescription className="text-gray-400">
-              Manage your books and sales
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-          <Link href="/admin">
-            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Book
-            </Button>
-          </Link>
-   
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                <Package className="h-4 w-4 mr-2" />
-                Manage Inventory
-              </Button>
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Sales Analytics
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
+      {/* ...other cards */}
       {hasRole("BUYER") && !hasRole("SELLER", "ADMIN") && (
         <Card className="bg-gray-900 border-gray-700">
           <CardHeader>
@@ -347,10 +218,12 @@ function DashboardSections({
                 <Button
                   size="sm"
                   className="bg-teal-500 hover:bg-teal-600 text-black"
+                  onClick={() => handleAddToCart("inventory-dune")}
                 >
                   Add to Cart
                 </Button>
               </div>
+
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white text-sm font-medium">The Hobbit</p>
@@ -359,20 +232,21 @@ function DashboardSections({
                 <Button
                   size="sm"
                   className="bg-teal-500 hover:bg-teal-600 text-black"
+                  onClick={() => handleAddToCart("inventory-hobbit")}
                 >
                   Add to Cart
                 </Button>
               </div>
+
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white text-sm font-medium">
-                    Brave New World
-                  </p>
+                  <p className="text-white text-sm font-medium">Brave New World</p>
                   <p className="text-gray-400 text-xs">by Aldous Huxley</p>
                 </div>
                 <Button
                   size="sm"
                   className="bg-teal-500 hover:bg-teal-600 text-black"
+                  onClick={() => handleAddToCart("inventory-brave-new-world")}
                 >
                   Add to Cart
                 </Button>

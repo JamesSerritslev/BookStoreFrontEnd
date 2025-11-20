@@ -29,7 +29,8 @@ const FEATURED_BOOKS = [
     price: 24.99,
     originalPrice: 29.99,
     rating: 4.5,
-    cover: "/images/RizzMemeBookCover.png",
+    cover:
+      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&h=500&fit=crop",
     badge: "Bestseller",
   },
   {
@@ -40,7 +41,8 @@ const FEATURED_BOOKS = [
     price: 27.99,
     originalPrice: 34.99,
     rating: 4.1,
-    cover: "/images/CryptoCurrencyForBeginners.png",
+    cover:
+      "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=500&fit=crop",
     badge: "Hot Deal",
   },
   {
@@ -66,19 +68,21 @@ const ALL_BOOKS = [
     originalPrice: 29.99,
     rating: 4.5,
     reviews: 1247,
-    cover: "/images/RizzMemeBookCover.png",
+    cover:
+      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
     category: "Self-Help",
     featured: true,
   },
   {
     id: 2,
-    title: "Sigma Grindset for Dummies",
+    title: "Sigma Grinset for Dummies",
     author: "Business Guru",
     price: 19.99,
     originalPrice: 24.99,
     rating: 4.2,
     reviews: 892,
-    cover: "/images/SigmaGrindsetForDummies.png",
+    cover:
+      "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
     category: "Business",
     featured: false,
   },
@@ -89,20 +93,22 @@ const ALL_BOOKS = [
     price: 16.99,
     rating: 4.0,
     reviews: 543,
-    cover: "/images/improvejawlineguide.png",
+    cover:
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
     category: "Health & Fitness",
     featured: true,
   },
   {
     id: 4,
-    title: "How To Talk To Women As a Computer Science Major",
-    author: "Alex Codeworth",
+    title: "Digital Marketing Mastery",
+    author: "Marketing Maven",
     price: 32.99,
     originalPrice: 39.99,
     rating: 4.7,
     reviews: 2156,
-    cover: "/images/TalkingToWomenComputerScience.png",
-    category: "Dating & Relationships",
+    cover:
+      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
+    category: "Marketing",
     featured: false,
   },
   {
@@ -127,7 +133,7 @@ const ALL_BOOKS = [
     rating: 4.1,
     reviews: 1567,
     cover:
-      "/images/CryptoCurrencyForBeginners.png",
+      "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=600&fit=crop",
     category: "Finance",
     featured: true,
   },
@@ -233,12 +239,9 @@ export default function BookBrowserPage() {
                   >
                     {/* Background Image with Overlay */}
                     <div
-                      className="absolute inset-0 bg-center bg-no-repeat"
+                      className="absolute inset-0 bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${book.cover})`,
-                        backgroundSize: "contain",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
                         filter: "blur(8px) brightness(0.4)",
                       }}
                     />
@@ -251,8 +254,8 @@ export default function BookBrowserPage() {
                           <div className="relative group">
                             <img
                               src={book.cover}
-                              alt={book.title}
-                              className="w-72 h-[420px] object-contain rounded-xl shadow-2xl border-4 border-teal-400/30 transition-transform duration-300 group-hover:scale-105 bg-black"
+                alt={book.title}
+                              className="w-72 h-[420px] object-cover rounded-xl shadow-2xl border-4 border-teal-400/30 transition-transform duration-300 group-hover:scale-105"
                             />
                             <Badge className="absolute -top-3 -right-3 bg-teal-500 text-black text-base px-5 py-2 rotate-12 shadow-lg font-bold z-10">
                               {book.badge}
@@ -443,7 +446,7 @@ export default function BookBrowserPage() {
                           <img
                             src={book.cover}
                             alt={book.title}
-                            className="w-full h-72 object-contain group-hover:scale-105 transition-transform duration-500 bg-gray-800"
+                            className="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500"
                           />
                           <div className="absolute top-3 right-3">
                             <Badge className="bg-orange-500 text-white px-3 py-1.5 shadow-lg font-semibold">
@@ -524,7 +527,7 @@ export default function BookBrowserPage() {
                           <img
                             src={book.cover}
                             alt={book.title}
-                            className="w-full h-80 object-contain group-hover:scale-105 transition-transform duration-500 bg-gray-800"
+                            className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
                           />
                           <Badge className="absolute top-4 left-4 bg-teal-500 text-black px-4 py-2 shadow-lg font-bold">
                             Featured
@@ -614,7 +617,7 @@ export default function BookBrowserPage() {
                           <img
                             src={book.cover}
                             alt={book.title}
-                            className="w-full h-64 object-contain group-hover:scale-105 transition-transform duration-300 bg-gray-800"
+                            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           {book.featured && (
                             <Badge className="absolute top-2 left-2 bg-teal-500 text-black">
@@ -711,6 +714,6 @@ export default function BookBrowserPage() {
       </main>
 
       <Footer />
-    </div>
+      </div>
   );
 }
