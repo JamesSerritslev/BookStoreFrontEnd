@@ -10,6 +10,7 @@ import {
   clearCart,
   formatPrice,
 } from "@/lib/api/cart";
+import { submitOrder } from "@/lib/api";
 import { CartResponse, CartItem } from "@/lib/types/cart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,7 +32,7 @@ const IS_MOCK_MODE = true; // Should match USE_MOCK_MODE in cart.ts
 
 export default function CartPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { toast } = useToast();
 
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -39,6 +40,7 @@ export default function CartPage() {
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [removingItemId, setRemovingItemId] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -143,12 +145,72 @@ export default function CartPage() {
     }
   };
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout flow (navigate to checkout page)
-    toast({
-      title: "Checkout",
-      description: "Checkout functionality coming soon!",
-    });
+  const handleCheckout = async () => {
+    if (!cart || !user || cart.items.length === 0) {
+      toast({
+        title: "Error",
+        description: "Cannot checkout with an empty cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsCheckingOut(true);
+
+      // Calculate order details from cart
+      const orderTotal = cart.subtotal / 100; // Convert from cents to dollars
+      const itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
+      const customerName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Customer";
+      const customerEmail = user.email || "";
+      const shippingAddress = `${customerName}, ${customerEmail}`.trim() || "Default Address";
+      const userId = user.id?.toString() || user.email || "unknown";
+
+      // Create order immediately via API (MSW will intercept)
+      // This ensures the order appears in the orders list
+      const orderResponse = await fetch("http://localhost:8080/api/v1/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userId,
+          cartId: cart.cartId || "default-cart",
+          itemCount: itemCount,
+          total: orderTotal,
+          shippingAddress: shippingAddress,
+          billingAddress: shippingAddress,
+        }),
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const order = await orderResponse.json();
+
+      // Clear the cart after successful order
+      await clearCart();
+      await fetchCart();
+
+      // Show success message
+      toast({
+        title: "Order Placed! 🎉",
+        description: `Your order has been placed successfully. Total: ${formatPrice(orderTotal * 100)}`,
+      });
+
+      // Redirect to orders page after a short delay
+      setTimeout(() => {
+        router.push("/admin/orders");
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to checkout:", error);
+      toast({
+        title: "Checkout Failed",
+        description: error instanceof Error ? error.message : "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   if (authLoading || isLoading) {
@@ -357,9 +419,17 @@ export default function CartPage() {
 
                   <Button
                     onClick={handleCheckout}
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-black font-semibold py-6 text-lg"
+                    disabled={isCheckingOut || !cart || cart.items.length === 0}
+                    className="w-full bg-teal-500 hover:bg-teal-600 text-black font-semibold py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Proceed to Checkout
+                    {isCheckingOut ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing Order...
+                      </>
+                    ) : (
+                      "Proceed to Checkout"
+                    )}
                   </Button>
 
                   <Button

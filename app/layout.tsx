@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
+import { MSWProvider } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,10 +22,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <AuthProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-        </AuthProvider>
+      <body
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} bg-black text-white min-h-screen`}
+      >
+        <MSWProvider>
+          <AuthProvider>
+            <Suspense fallback={<div className="bg-black text-white min-h-screen flex items-center justify-center">Loading...</div>}>
+              {children}
+            </Suspense>
+          </AuthProvider>
+        </MSWProvider>
+
         <Toaster />
         <Analytics />
       </body>
