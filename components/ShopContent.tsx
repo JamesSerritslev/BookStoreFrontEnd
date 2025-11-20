@@ -113,15 +113,15 @@ const DUMMY_BOOKS = [
   },
 ];
 
-const CATEGORIES = [
-    "All",
-    "Self-Help",
-    "Business",
-    "Health & Fitness",
-    "Marketing",
-    "Psychology",
-    "Cooking",
-    "Finance",
+export const CATEGORIES = [
+  "All",
+  "Self-Help",
+  "Business",
+  "Health & Fitness",
+  "Marketing",
+  "Psychology",
+  "Cooking",
+  "Finance",
 ];
 
 export function ShopContent() {
@@ -136,6 +136,12 @@ export function ShopContent() {
   useEffect(() => {
     const query = searchParams?.get("q") || "";
     setSearchTerm(query);
+  }, [searchParams]);
+
+  // Initialize selected category from URL params
+  useEffect(() => {
+    const category = searchParams?.get("category") || "All";
+    setSelectedCategory(category);
   }, [searchParams]);
 
   const filteredAndSortedBooks = useMemo(() => {
