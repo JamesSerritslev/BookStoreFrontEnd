@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,10 @@ export default function LoginForm() {
 
     try {
       await login({ email, password });
-      // Redirect to dashboard on successful login
-      router.push("/dashboard");
+      // Wait for state to propagate, then redirect
+      setTimeout(() => {
+        router.replace("/dashboard");
+      }, 200);
     } catch (err) {
       // Error is handled by the auth context
       console.error("Login failed:", err);
