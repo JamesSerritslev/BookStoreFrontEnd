@@ -4,24 +4,52 @@ import { http, HttpResponse } from "msw";
 const mockBooks = [
   {
     bookId: 1,
-    bookName: "The Great Gatsby",
-    bookDescription: "A classic American novel about the Jazz Age",
-    bookPrice: 12.99,
+    bookName: "The Rizzonomicon",
+    bookDescription: "How to Up Your Game and NPC-Proof Your Life",
+    bookPrice: 24.99,
     bookPicture: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
   },
   {
     bookId: 2,
-    bookName: "To Kill a Mockingbird",
-    bookDescription: "A gripping tale of racial injustice and childhood innocence",
-    bookPrice: 14.99,
+    bookName: "Sigma Grinset for Dummies",
+    bookDescription: "Master the art of business and entrepreneurship",
+    bookPrice: 19.99,
     bookPicture: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
   },
   {
     bookId: 3,
-    bookName: "1984",
-    bookDescription: "A dystopian social science fiction novel",
-    bookPrice: 13.99,
+    bookName: "Improve Your Jawline",
+    bookDescription: "Transform your appearance and confidence",
+    bookPrice: 16.99,
     bookPicture: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
+  },
+  {
+    bookId: 4,
+    bookName: "Digital Marketing Mastery",
+    bookDescription: "Become a marketing expert in the digital age",
+    bookPrice: 32.99,
+    bookPicture: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
+  },
+  {
+    bookId: 6,
+    bookName: "Cooking for Gamers",
+    bookDescription: "Quick and easy meals for busy gamers",
+    bookPrice: 18.99,
+    bookPicture: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=600&fit=crop",
+  },
+  {
+    bookId: 7,
+    bookName: "Cryptocurrency for Beginners",
+    bookDescription: "Understanding the Digital Gold Rush",
+    bookPrice: 27.99,
+    bookPicture: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=600&fit=crop",
+  },
+  {
+    bookId: 8,
+    bookName: "Mindfulness in the Digital Age",
+    bookDescription: "Finding Peace in a Connected World",
+    bookPrice: 23.99,
+    bookPicture: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
   },
 ];
 
@@ -225,6 +253,9 @@ const mockAuthUsers = [
 let books = [...mockBooks];
 let orders = [...mockOrders];
 let users = [...mockUsers];
+
+// Mock cart storage (in-memory per session)
+const mockCarts = new Map();
 
 export const handlers = [
   // ============ AUTHENTICATION API ============
@@ -561,23 +592,195 @@ export const handlers = [
     }, { status: 201 });
   }),
 
-  // ============ CART API (if needed) ============
+  // ============ CART API ============
 
-  // GET /api/v1/cart - Get cart
-  http.get("http://localhost:8080/api/v1/cart", () => {
+  // GET /api/v1/cart/me - Get user's cart
+  http.get("http://localhost:8080/api/v1/cart/me", ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (!token) {
+      return HttpResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get or create cart for this user
+    if (!mockCarts.has(token)) {
+      mockCarts.set(token, {
+        cartId: `cart-${Date.now()}`,
+        userId: `user-${Date.now()}`,
+        items: [],
+        subtotal: 0,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    const cart = mockCarts.get(token);
     return HttpResponse.json({
-      items: [],
-      total: 0,
+      success: true,
+      message: "Cart retrieved",
+      data: cart,
     });
   }),
 
-  // POST /api/v1/cart - Add item to cart
-  http.post("http://localhost:8080/api/v1/cart", async ({ request }) => {
-    const item = (await request.json()) as any;
-    return HttpResponse.json(
-      { itemId: "cart-item-1", ...item },
-      { status: 201 }
-    );
+  // POST /api/v1/cart/me/items - Add item to cart
+  http.post("http://localhost:8080/api/v1/cart/me/items", async ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (!token) {
+      return HttpResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = (await request.json()) as any;
+    const { inventoryId, qty } = body;
+
+    // Get or create cart
+    if (!mockCarts.has(token)) {
+      mockCarts.set(token, {
+        cartId: `cart-${Date.now()}`,
+        userId: `user-${Date.now()}`,
+        items: [],
+        subtotal: 0,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    const cart = mockCarts.get(token);
+    
+    // Check if item already exists
+    const existingItem = cart.items.find((item: any) => item.inventoryId === inventoryId);
+    
+    if (existingItem) {
+      // Update quantity
+      existingItem.qty += qty;
+      existingItem.lineSubtotal = existingItem.unitPrice * existingItem.qty;
+    } else {
+      // Add new item with random price
+      const unitPrice = Math.floor(Math.random() * 5000) + 1000; // $10-$60
+      const newItem = {
+        itemId: `item-${Date.now()}-${Math.random()}`,
+        inventoryId,
+        unitPrice,
+        qty,
+        lineSubtotal: unitPrice * qty,
+      };
+      cart.items.push(newItem);
+    }
+
+    // Update cart subtotal
+    cart.subtotal = cart.items.reduce((sum: number, item: any) => sum + item.lineSubtotal, 0);
+
+    return HttpResponse.json({
+      success: true,
+      message: "Item added",
+      data: { itemId: cart.items[cart.items.length - 1].itemId },
+    }, { status: 201 });
+  }),
+
+  // PATCH /api/v1/cart/me/items/:itemId - Update cart item quantity
+  http.patch("http://localhost:8080/api/v1/cart/me/items/:itemId", async ({ request, params }) => {
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (!token) {
+      return HttpResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const cart = mockCarts.get(token);
+    if (!cart) {
+      return HttpResponse.json(
+        { success: false, message: "Cart not found" },
+        { status: 404 }
+      );
+    }
+
+    const body = (await request.json()) as any;
+    const { qty } = body;
+    const { itemId } = params;
+
+    const item = cart.items.find((i: any) => i.itemId === itemId);
+    if (!item) {
+      return HttpResponse.json(
+        { success: false, message: "Item not found" },
+        { status: 404 }
+      );
+    }
+
+    item.qty = qty;
+    item.lineSubtotal = item.unitPrice * qty;
+    cart.subtotal = cart.items.reduce((sum: number, item: any) => sum + item.lineSubtotal, 0);
+
+    return HttpResponse.json({
+      success: true,
+      message: "Item updated",
+      data: cart,
+    });
+  }),
+
+  // DELETE /api/v1/cart/me/items/:itemId - Remove item from cart
+  http.delete("http://localhost:8080/api/v1/cart/me/items/:itemId", ({ request, params }) => {
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (!token) {
+      return HttpResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const cart = mockCarts.get(token);
+    if (!cart) {
+      return HttpResponse.json(
+        { success: false, message: "Cart not found" },
+        { status: 404 }
+      );
+    }
+
+    const { itemId } = params;
+    const itemIndex = cart.items.findIndex((i: any) => i.itemId === itemId);
+    
+    if (itemIndex === -1) {
+      return HttpResponse.json(
+        { success: false, message: "Item not found" },
+        { status: 404 }
+      );
+    }
+
+    cart.items.splice(itemIndex, 1);
+    cart.subtotal = cart.items.reduce((sum: number, item: any) => sum + item.lineSubtotal, 0);
+
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // POST /api/v1/cart/me/clear - Clear all items from cart
+  http.post("http://localhost:8080/api/v1/cart/me/clear", ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (!token) {
+      return HttpResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const cart = mockCarts.get(token);
+    if (cart) {
+      cart.items = [];
+      cart.subtotal = 0;
+    }
+
+    return new HttpResponse(null, { status: 204 });
   }),
 
   // ============ USERS API ============

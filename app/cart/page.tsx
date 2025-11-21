@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { USE_MOCK_API } from "@/lib/config";
 
 export default function CartPage() {
   const router = useRouter();
@@ -233,30 +232,6 @@ export default function CartPage() {
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
-        {/* Mock Mode Banner */}
-        {USE_MOCK_API && (
-          <div className="mb-6 bg-blue-900/20 border border-blue-500/50 rounded-lg p-4 flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-blue-300 font-semibold mb-1">
-                🎭 Mock Mode Active
-              </p>
-              <p className="text-sm text-gray-300">
-                Using local Next.js API routes with mock data. Prices are random
-                and data persists during the session. To switch to real backend,
-                set{" "}
-                <code className="bg-black/30 px-1 py-0.5 rounded text-blue-200">
-                  NEXT_PUBLIC_USE_MOCK_API=false
-                </code>{" "}
-                in{" "}
-                <code className="bg-black/30 px-1 py-0.5 rounded text-blue-200">
-                  .env.local
-                </code>
-              </p>
-            </div>
-          </div>
-        )}
-
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Shopping Cart</h1>
           <p className="text-gray-400">

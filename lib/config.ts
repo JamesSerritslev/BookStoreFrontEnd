@@ -1,20 +1,16 @@
 /**
- * Configuration for API endpoints and mock mode
+ * Configuration for API endpoints
  *
- * Toggle between mock API (Next.js routes) and real backend
- * by setting NEXT_PUBLIC_USE_MOCK_API in .env.local
+ * All API calls go to the backend URL
+ * In development, MSW (Mock Service Worker) intercepts these calls
+ * In production, they go to the real backend
  */
-
-export const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 
 /**
- * Base API URL
- * - Mock mode: empty string (uses Next.js API routes at /api/v1/...)
- * - Real backend: full URL from env (e.g., http://localhost:8080)
+ * Base API URL - defaults to localhost:8080 for development
+ * MSW will intercept these calls in development mode
  */
-export const API_BASE_URL = USE_MOCK_API
-  ? "" // Next.js API routes
-  : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 /**
  * Full API URL constructor
