@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -15,141 +15,46 @@ import {
   TrendingUp,
   Award,
   Flame,
+  Loader2,
 } from "lucide-react";
 import { addToCart } from "@/lib/api/cart";
+import { getAllBooks, type Book } from "@/lib/api/books";
 import { useToast } from "@/hooks/use-toast";
 
-// Featured books for hero carousel
-const FEATURED_BOOKS = [
-  {
-    id: 1,
-    title: "The Rizzonomicon",
-    subtitle: "How to Up Your Game and NPC-Proof Your Life",
-    author: "Chad Thundercock",
-    price: 24.99,
-    originalPrice: 29.99,
-    rating: 4.5,
-    cover:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&h=500&fit=crop",
-    badge: "Bestseller",
-  },
-  {
-    id: 7,
-    title: "Cryptocurrency for Beginners",
-    subtitle: "Understanding the Digital Gold Rush",
-    author: "Crypto King",
-    price: 27.99,
-    originalPrice: 34.99,
-    rating: 4.1,
-    cover:
-      "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=500&fit=crop",
-    badge: "Hot Deal",
-  },
-  {
-    id: 8,
-    title: "Mindfulness in the Digital Age",
-    subtitle: "Finding Peace in a Connected World",
-    author: "Zen Master",
-    price: 23.99,
-    rating: 4.6,
-    cover:
-      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=800&h=500&fit=crop",
-    badge: "Editor's Pick",
-  },
-];
+// Helper function to map API books to UI format
+const mapBookToUIFormat = (book: Book, index: number) => {
+  const categories = [
+    "Self-Help",
+    "Business",
+    "Health & Fitness",
+    "Marketing",
+    "Cooking",
+    "Finance",
+  ];
+  const authors = [
+    "Chad Thundercock",
+    "Business Guru",
+    "Dr. Strong Jaw",
+    "Marketing Maven",
+    "Chef Noob",
+    "Crypto King",
+    "Zen Master",
+  ];
 
-// All available books
-const ALL_BOOKS = [
-  {
-    id: 1,
-    title: "The Rizzonomicon",
-    author: "Chad Thundercock",
-    price: 24.99,
-    originalPrice: 29.99,
-    rating: 4.5,
-    reviews: 1247,
-    cover:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-    category: "Self-Help",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Sigma Grinset for Dummies",
-    author: "Business Guru",
-    price: 19.99,
-    originalPrice: 24.99,
-    rating: 4.2,
-    reviews: 892,
-    cover:
-      "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
-    category: "Business",
-    featured: false,
-  },
-  {
-    id: 3,
-    title: "Improve Your Jawline",
-    author: "Dr. Strong Jaw",
-    price: 16.99,
-    rating: 4.0,
-    reviews: 543,
-    cover:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
-    category: "Health & Fitness",
-    featured: true,
-  },
-  {
-    id: 4,
-    title: "Digital Marketing Mastery",
-    author: "Marketing Maven",
-    price: 32.99,
-    originalPrice: 39.99,
-    rating: 4.7,
-    reviews: 2156,
-    cover:
-      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
-    category: "Marketing",
-    featured: false,
-  },
-  {
-    id: 6,
-    title: "Cooking for Gamers",
-    author: "Chef Noob",
-    price: 18.99,
-    originalPrice: 22.99,
-    rating: 4.3,
-    reviews: 1034,
-    cover:
-      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=600&fit=crop",
-    category: "Cooking",
-    featured: false,
-  },
-  {
-    id: 7,
-    title: "Cryptocurrency for Beginners",
-    author: "Crypto King",
-    price: 27.99,
-    originalPrice: 34.99,
-    rating: 4.1,
-    reviews: 1567,
-    cover:
-      "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=600&fit=crop",
-    category: "Finance",
-    featured: true,
-  },
-  {
-    id: 8,
-    title: "Mindfulness in the Digital Age",
-    author: "Zen Master",
-    price: 23.99,
-    rating: 4.6,
-    reviews: 987,
-    cover:
-      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
-    category: "Self-Help",
-    featured: false,
-  },
-];
+  return {
+    id: book.bookId,
+    title: book.bookName,
+    author: authors[index % authors.length],
+    price: book.bookPrice,
+    originalPrice: book.bookPrice > 20 ? book.bookPrice + 5 : undefined,
+    rating: 4 + Math.random() * 0.9, // Random rating 4.0-4.9
+    reviews: Math.floor(Math.random() * 2000) + 500,
+    cover: book.bookPicture,
+    category: categories[index % categories.length],
+    featured: index % 3 === 0, // Every 3rd book is featured
+    description: book.bookDescription,
+  };
+};
 
 const CATEGORIES = [
   { name: "All Books", count: 100, icon: "📚" },
@@ -167,14 +72,40 @@ export default function BookBrowserPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("All Books");
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
+  const [books, setBooks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch books from API
+  useEffect(() => {
+    async function fetchBooks() {
+      try {
+        setIsLoading(true);
+        const apiBooks = await getAllBooks();
+        const mappedBooks = apiBooks.map((book, index) =>
+          mapBookToUIFormat(book, index)
+        );
+        setBooks(mappedBooks);
+      } catch (error) {
+        console.error("Failed to fetch books:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load books. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchBooks();
+  }, [toast]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % FEATURED_BOOKS.length);
+    setCurrentSlide((prev) => (prev + 1) % Math.max(featuredBooks.length, 1));
   };
 
   const prevSlide = () => {
     setCurrentSlide((prev) =>
-      prev === 0 ? FEATURED_BOOKS.length - 1 : prev - 1
+      prev === 0 ? Math.max(featuredBooks.length - 1, 0) : prev - 1
     );
   };
 
@@ -206,16 +137,32 @@ export default function BookBrowserPage() {
     }
   };
 
+  // Derived data from fetched books
   const filteredBooks =
     selectedCategory === "All Books"
-      ? ALL_BOOKS
-      : ALL_BOOKS.filter((book) => book.category === selectedCategory);
+      ? books
+      : books.filter((book) => book.category === selectedCategory);
 
-  const featuredBooks = ALL_BOOKS.filter((book) => book.featured);
-  const bestsellers = ALL_BOOKS.sort((a, b) => b.reviews - a.reviews).slice(
-    0,
-    4
-  );
+  const featuredBooks = books.filter((book) => book.featured).slice(0, 3);
+  const bestsellers = [...books]
+    .sort((a, b) => b.reviews - a.reviews)
+    .slice(0, 4);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-teal-400 mx-auto mb-4" />
+            <p className="text-xl text-gray-400">Loading amazing books...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -231,7 +178,7 @@ export default function BookBrowserPage() {
                 className="relative h-full transition-all duration-500 ease-in-out"
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
-                {FEATURED_BOOKS.map((book, idx) => (
+                {featuredBooks.map((book, idx) => (
                   <div
                     key={book.id}
                     className="absolute inset-0 w-full h-full"
@@ -254,7 +201,7 @@ export default function BookBrowserPage() {
                           <div className="relative group">
                             <img
                               src={book.cover}
-                alt={book.title}
+                              alt={book.title}
                               className="w-72 h-[420px] object-cover rounded-xl shadow-2xl border-4 border-teal-400/30 transition-transform duration-300 group-hover:scale-105"
                             />
                             <Badge className="absolute -top-3 -right-3 bg-teal-500 text-black text-base px-5 py-2 rotate-12 shadow-lg font-bold z-10">
@@ -364,7 +311,7 @@ export default function BookBrowserPage() {
 
               {/* Carousel Indicators */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-3">
-                {FEATURED_BOOKS.map((_, idx) => (
+                {featuredBooks.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
@@ -714,6 +661,6 @@ export default function BookBrowserPage() {
       </main>
 
       <Footer />
-      </div>
+    </div>
   );
 }

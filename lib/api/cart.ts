@@ -1,7 +1,6 @@
 // Cart API Service
 // Handles all cart-related API calls
-//
-// Toggle between mock and real backend via NEXT_PUBLIC_USE_MOCK_API in .env.local
+// MSW (Mock Service Worker) intercepts these calls in development mode
 
 import {
   CartResponse,
