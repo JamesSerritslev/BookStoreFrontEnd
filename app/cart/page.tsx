@@ -162,6 +162,15 @@ export default function CartPage() {
       const shippingAddress = `${customerName}, ${customerEmail}`.trim() || "Default Address";
       const userId = user.id?.toString() || user.email || "unknown";
 
+      // Extract book items from cart
+      const bookItems = cart.items.map((item) => ({
+        bookId: item.inventoryId,
+        bookName: item.bookName || "Book",
+        bookPicture: item.bookPicture || "",
+        quantity: item.qty,
+        price: item.unitPrice / 100, // Convert to dollars
+      }));
+
       // Create order immediately via API (MSW will intercept)
       // This ensures the order appears in the orders list
       const orderResponse = await fetch("http://localhost:8080/api/v1/order", {
@@ -169,11 +178,14 @@ export default function CartPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: userId,
+          customerEmail: customerEmail,
+          customerName: customerName,
           cartId: cart.cartId || "default-cart",
           itemCount: itemCount,
           total: orderTotal,
           shippingAddress: shippingAddress,
           billingAddress: shippingAddress,
+          items: bookItems, // Include book details
         }),
       });
 

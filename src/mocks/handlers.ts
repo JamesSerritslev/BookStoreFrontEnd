@@ -490,15 +490,15 @@ export const handlers = [
   http.post("http://localhost:8080/api/v1/order", async ({ request }) => {
     const orderData = (await request.json()) as any;
 
-    // Extract customer info from shipping address or use defaults
-    const shippingParts = orderData.shippingAddress?.split(",") || [];
-    const customerName = shippingParts[0]?.trim() || "Customer";
-    const customerEmail = orderData.userId?.includes("@")
-      ? orderData.userId
-      : `${orderData.userId}@example.com`;
+    // Get customer info directly from orderData
+    const customerName = orderData.customerName || "Customer";
+    const customerEmail = orderData.customerEmail || orderData.userId || "";
 
     // Use the total from orderData (calculated by submitOrder)
     const orderTotal = orderData.total || 0;
+
+    // Get book items from orderData
+    const bookItems = orderData.items || [];
 
     // Create a new order for the orders list (used by /api/orders)
     const newOrder = {
@@ -510,6 +510,7 @@ export const handlers = [
       createdAt: new Date().toISOString(),
       status: "Completed",
       date: new Date().toISOString().split("T")[0],
+      items: bookItems, // Include book details in order
     };
 
     orders.push(newOrder);
