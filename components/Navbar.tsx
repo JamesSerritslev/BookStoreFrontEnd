@@ -50,6 +50,43 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
   const handleNavigation = (path: string) => {
     router.push(path);
   };
+
+  // Fetch cart and compute total quantity
+  const refreshCartCount = async () => {
+    try {
+      const cart = await getCart();
+      if (cart && Array.isArray(cart.items)) {
+        const total = cart.items.reduce((acc, it) => acc + (it.qty || 0), 0);
+        setCartItemCount(total);
+      } else {
+        setCartItemCount(0);
+      }
+    } catch (e) {
+      // If user is not authenticated or API fails, show 0
+      setCartItemCount(0);
+    }
+  };
+
+  // Fetch cart on mount and when authentication state changes
+  useEffect(() => {
+    if (userIsSignedIn) {
+      refreshCartCount();
+    } else {
+      setCartItemCount(0);
+    }
+
+    const onCartUpdated = () => {
+      // re-fetch when cartUpdated event fires
+      if (userIsSignedIn) refreshCartCount();
+    };
+
+    window.addEventListener("cartUpdated", onCartUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener("cartUpdated", onCartUpdated as EventListener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIsSignedIn]);
   return (
     <nav className="bg-black border-b border-gray-800 px-6 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">

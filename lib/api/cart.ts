@@ -76,6 +76,15 @@ export async function addToCart(
     throw new Error(apiResponse.message || "Failed to add item to cart");
   }
 
+  // Notify UI that the cart has been updated (client-side only)
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (e) {
+      // ignore dispatch errors
+    }
+  }
+
   return apiResponse.data;
 }
 
@@ -113,6 +122,15 @@ export async function updateCartItem(
     throw new Error(apiResponse.message || "Failed to update cart item");
   }
 
+  // Notify UI that the cart has been updated (client-side only)
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (e) {
+      // ignore dispatch errors
+    }
+  }
+
   return apiResponse.data;
 }
 
@@ -137,6 +155,13 @@ export async function removeFromCart(itemId: string): Promise<void> {
   }
 
   // 204 No Content - success
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (e) {
+      // ignore
+    }
+  }
 }
 
 /**
@@ -157,6 +182,13 @@ export async function clearCart(): Promise<void> {
   }
 
   // 204 No Content - success
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (e) {
+      // ignore
+    }
+  }
 }
 
 /**
