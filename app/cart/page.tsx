@@ -10,8 +10,7 @@ import {
   clearCart,
   formatPrice,
 } from "@/lib/api/cart";
-import { submitOrder } from "@/lib/api";
-import { CartResponse, CartItem } from "@/lib/types/cart";
+import { CartResponse, CartItem, CartItemWithDetails } from "@/lib/types/cart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -261,9 +260,17 @@ export default function CartPage() {
                 <Card key={item.itemId} className="bg-gray-900 border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      {/* Placeholder for book image */}
-                      <div className="w-24 h-32 bg-gray-800 rounded flex items-center justify-center flex-shrink-0">
-                        <ShoppingCart className="w-8 h-8 text-gray-600" />
+                      {/* Book image */}
+                      <div className="w-24 h-32 bg-gray-800 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {item.bookPicture ? (
+                          <img
+                            src={item.bookPicture}
+                            alt={item.bookName || "Book"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ShoppingCart className="w-8 h-8 text-gray-600" />
+                        )}
                       </div>
 
                       {/* Item Details */}
@@ -271,8 +278,13 @@ export default function CartPage() {
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <h3 className="font-semibold text-lg mb-1">
-                              Item ID: {item.inventoryId.substring(0, 8)}...
+                              {item.bookName || `Item ID: ${item.inventoryId.substring(0, 8)}...`}
                             </h3>
+                            {item.bookDescription && (
+                              <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                                {item.bookDescription}
+                              </p>
+                            )}
                             <p className="text-sm text-gray-400">
                               {formatPrice(item.unitPrice)} each
                             </p>

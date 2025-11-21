@@ -12,7 +12,7 @@ export interface CartItem {
 export interface CartResponse {
   cartId: string; // UUID
   userId: string; // UUID
-  items: CartItem[];
+  items: CartItemWithDetails[];
   subtotal: number; // Price in cents
   createdAt: string; // ISO-8601 UTC timestamp
 }
@@ -46,4 +46,12 @@ export interface CartItemWithDetails extends CartItem {
   bookName?: string;
   bookPicture?: string;
   bookDescription?: string;
+}
+
+export interface CartResponseWithDetails {
+  cartId: string;
+  userId: string;
+  items: CartItemWithDetails[];
+  subtotal: number;
+  createdAt: string;
 }

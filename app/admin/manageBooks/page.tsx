@@ -4,18 +4,17 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
-import { fetchAllBooks, updateBookById, removeBookById } from "@/lib/api/book"
-import type { ApiBook } from "@/lib/api"
+import { fetchAllBooks, updateBookById, removeBookById, type Book } from "@/lib/api/books"
 
 export default function ManageBooksPage() {
     const router = useRouter()
     const [authorized, setAuthorized] = useState(false)
-    const [books, setBooks] = useState<ApiBook[]>([])
+    const [books, setBooks] = useState<Book[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     
     // Edit state
-    const [editingBook, setEditingBook] = useState<ApiBook | null>(null)
+    const [editingBook, setEditingBook] = useState<Book | null>(null)
     const [editForm, setEditForm] = useState({
         bookName: "",
         bookDescription: "",
@@ -47,7 +46,7 @@ export default function ManageBooksPage() {
         }
     }
 
-    const handleEdit = (book: ApiBook) => {
+    const handleEdit = (book: Book) => {
         setEditingBook(book)
         setEditForm({
             bookName: book.bookName,
