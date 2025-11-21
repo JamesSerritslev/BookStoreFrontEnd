@@ -128,3 +128,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+code, pre {
+  font-family: var(--font-geist-mono), monospace;
+}

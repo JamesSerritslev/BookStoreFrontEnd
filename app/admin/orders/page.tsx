@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Order = {
   id: string;

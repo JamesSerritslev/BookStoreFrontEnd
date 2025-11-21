@@ -90,71 +90,102 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Login function - Uses real API
-  const login = async (credentials: LoginCredentials): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
+  // Login function - Uses real API, but allows dev fallback
+const login = async (credentials: LoginCredentials): Promise<void> => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      const response = await fetch(getApiUrl("/api/v1/auth/login"), {
-        method: "POST",
-        headers: getApiHeaders(false), // No auth needed for login
-        body: JSON.stringify(credentials),
-      });
+  try {
+    // 🔹 DEV MODE ONLY — Hardcoded admin login
+    if (
+      process.env.NEXT_PUBLIC_ENV === "dev" &&
+      credentials.email === "admin@bookhub.com" &&
+      credentials.password === "admin123"
+    ) {
+      const fakeUser: User = {
+        id: "dev-admin-1",
+        firstName: "Dev",   // make sure firstName exists if dashboard uses it
+        lastName: "Admin",
+        name: "Dev Admin",
+        email: "admin@dev.com",
+        role: "ADMIN",
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Login failed");
-      }
+      const fakeToken = "dev-token-123";
 
-      const data: AuthResponse = await response.json();
+      setUser(fakeUser);
+      setToken(fakeToken);
+      setUserToStorage(fakeUser);
+      setTokenToStorage(fakeToken);
 
-      // Store token and user data
-      setToken(data.token);
-      setUser(data.user);
-      setTokenToStorage(data.token);
-      setUserToStorage(data.user);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
       setIsLoading(false);
+      return; // skip real API
     }
-  };
+
+    // 🔹 REAL API LOGIN
+    const response = await fetch(getApiUrl("/api/v1/auth/login"), {
+      method: "POST",
+      headers: getApiHeaders(false),
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Login failed");
+    }
+
+    const data: AuthResponse = await response.json();
+
+    setToken(data.token);
+    setUser(data.user);
+    setTokenToStorage(data.token);
+    setUserToStorage(data.user);
+
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Login failed";
+    setError(errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // Register function - Uses real API
-  const register = async (data: RegisterData): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
+const register = async (data: RegisterData): Promise<void> => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      const response = await fetch(getApiUrl("/api/v1/auth/register"), {
-        method: "POST",
-        headers: getApiHeaders(false), // No auth needed for registration
-        body: JSON.stringify(data),
-      });
+  try {
+    // 🔹 ALWAYS call the real API, even in development
+    const response = await fetch(getApiUrl("/api/v1/auth/register"), {
+      method: "POST",
+      headers: getApiHeaders(false),
+      body: JSON.stringify(data),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Registration failed");
-      }
-
-      const authData: AuthResponse = await response.json();
-
-      // Store token and user data (auto-login after registration)
-      setToken(authData.token);
-      setUser(authData.user);
-      setTokenToStorage(authData.token);
-      setUserToStorage(authData.user);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Registration failed";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || "Registration failed");
     }
-  };
+
+    const authData: AuthResponse = await response.json();
+
+    setToken(authData.token);
+    setUser(authData.user);
+    setTokenToStorage(authData.token);
+    setUserToStorage(authData.user);
+
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Registration failed";
+    setError(msg);
+    throw new Error(msg);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   // Logout function
   const logout = (): void => {

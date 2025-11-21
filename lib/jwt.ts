@@ -72,32 +72,30 @@ export function isTokenExpired(token: string): boolean {
 
 // Check if token is valid (exists and not expired)
 export function isTokenValid(token: string | null): boolean {
-  if (!token) {
-    return false;
+  if (!token) return false;
+
+  if (process.env.NEXT_PUBLIC_ENV === "dev" && token.startsWith("dev-")) {
+    return true;
   }
 
-  // Handle mock tokens for development (old format)
+  // Existing mock token check
   if (token.startsWith("mock.jwt.token.")) {
-    return true; // Mock tokens are always valid
+    return true;
   }
 
-  // Handle base64-encoded JSON tokens (new mock API format)
+  // Existing JWT/base64 checks
   try {
-    // Try to decode as base64 JSON first
     const decoded = atob(token);
     const payload = JSON.parse(decoded);
-    // Check if it has exp field and if it's expired
     if (payload.exp) {
-      // exp is in milliseconds, Date.now() is also in milliseconds
       return payload.exp > Date.now();
     }
-    // If no exp field, consider it valid (for mock tokens)
     return true;
   } catch (e) {
-    // Not base64 JSON, try JWT format
     return !isTokenExpired(token);
   }
 }
+
 
 // Extract user data from JWT token
 export function getUserFromToken(token: string): User | null {

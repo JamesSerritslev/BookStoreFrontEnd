@@ -194,11 +194,227 @@ const mockUsers = [
   },
 ];
 
+// Mock users with passwords for authentication (matching lib/mock/data.ts)
+const mockAuthUsers = [
+  {
+    id: 1,
+    email: "buyer@test.com",
+    password: "password123", // In mock mode only!
+    firstName: "John",
+    lastName: "Buyer",
+    role: "BUYER" as const,
+  },
+  {
+    id: 2,
+    email: "seller@test.com",
+    password: "password123",
+    firstName: "Jane",
+    lastName: "Seller",
+    role: "SELLER" as const,
+  },
+  {
+    id: 3,
+    email: "admin@test.com",
+    password: "password123",
+    firstName: "Admin",
+    lastName: "User",
+    role: "ADMIN" as const,
+  },
+];
+
 let books = [...mockBooks];
 let orders = [...mockOrders];
 let users = [...mockUsers];
 
 export const handlers = [
+  // ============ AUTHENTICATION API ============
+
+  // POST /api/v1/auth/login - Login user
+  http.post("http://localhost:8080/api/v1/auth/login", async ({ request }) => {
+    try {
+      const body = (await request.json()) as { email: string; password: string };
+      const { email, password } = body;
+
+      // Validation
+      if (!email || !password) {
+        return HttpResponse.json(
+          { error: "Email and password are required" },
+          { status: 400 }
+        );
+      }
+
+      // Trim whitespace
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = password.trim();
+
+      // Find user (case-insensitive email comparison)
+      const user = mockAuthUsers.find(
+        (u) => u.email.toLowerCase() === trimmedEmail && u.password === trimmedPassword
+      );
+
+      if (!user) {
+        return HttpResponse.json(
+          { error: "Invalid email or password" },
+          { status: 401 }
+        );
+      }
+
+      // Generate mock JWT token
+      const mockToken = Buffer.from(
+        JSON.stringify({
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+          exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        })
+      ).toString("base64");
+
+      // Return AuthResponse matching the expected format
+      return HttpResponse.json({
+        token: mockToken,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      return HttpResponse.json(
+        { error: "Authentication service unavailable" },
+        { status: 500 }
+      );
+    }
+  }),
+
+  // POST /api/v1/auth/register - Register new user
+  http.post("http://localhost:8080/api/v1/auth/register", async ({ request }) => {
+    try {
+      const body = (await request.json()) as {
+        email: string;
+        password: string;
+        firstName: string;
+        lastName: string;
+        role?: string;
+      };
+      const { email, password, firstName, lastName, role } = body;
+
+      // Validation
+      if (!email || !password || !firstName || !lastName) {
+        return HttpResponse.json(
+          {
+            error: "Missing required fields: firstName, lastName, email, password",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (password.length < 8) {
+        return HttpResponse.json(
+          { error: "Password must be at least 8 characters" },
+          { status: 422 }
+        );
+      }
+
+      // Check if email already exists
+      const existingUser = mockAuthUsers.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
+      if (existingUser) {
+        return HttpResponse.json(
+          { error: "Email already exists" },
+          { status: 409 }
+        );
+      }
+
+      // Create new user
+      const newUser = {
+        id: mockAuthUsers.length > 0 
+          ? Math.max(...mockAuthUsers.map((u) => u.id)) + 1 
+          : 1,
+        email: email.trim(),
+        password: password.trim(), // In mock mode only!
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        role: (role as "BUYER" | "SELLER" | "ADMIN") || "BUYER" as const,
+      };
+
+      mockAuthUsers.push(newUser);
+
+      // Generate mock JWT token
+      const mockToken = Buffer.from(
+        JSON.stringify({
+          userId: newUser.id,
+          email: newUser.email,
+          role: newUser.role,
+          exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        })
+      ).toString("base64");
+
+      // Return AuthResponse
+      return HttpResponse.json(
+        {
+          token: mockToken,
+          user: {
+            id: newUser.id,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.email,
+            role: newUser.role,
+          },
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error("Registration error:", error);
+      return HttpResponse.json(
+        { error: "Registration service unavailable" },
+        { status: 500 }
+      );
+    }
+  }),
+
+  // GET /api/v1/auth/me - Get current user info
+  http.get("http://localhost:8080/api/v1/auth/me", ({ request }) => {
+    // Extract token from Authorization header
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return HttpResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    try {
+      const token = authHeader.replace("Bearer ", "");
+      const decoded = JSON.parse(Buffer.from(token, "base64").toString());
+      
+      // Find user by ID from token
+      const user = mockAuthUsers.find((u) => u.id === decoded.userId);
+      if (!user) {
+        return HttpResponse.json(
+          { error: "User not found" },
+          { status: 404 }
+        );
+      }
+
+      return HttpResponse.json({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      });
+    } catch (error) {
+      return HttpResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+  }),
+
   // ============ BOOKS API ============
   
   // GET /api/v1/book - Fetch all books
