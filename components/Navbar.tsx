@@ -242,11 +242,17 @@ export default function Navbar({ isSignedIn }: NavbarProps) {
 
                   {hasRole("BUYER", "SELLER", "ADMIN") && (
                     <DropdownMenuItem
-                      onSelect={() => handleNavigation("/admin/orders")}
+                      onSelect={() => {
+                        if (hasRole("ADMIN")) {
+                           handleNavigation("/admin/orders");
+                        } else {
+                           handleNavigation("/buyer/custOrders");
+                        }
+                      }}
                       className="text-white hover:bg-gray-800 cursor-pointer"
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      My Orders
+                      {hasRole("ADMIN") ? "All Orders" : "My Orders"}
                     </DropdownMenuItem>
                   )}
 

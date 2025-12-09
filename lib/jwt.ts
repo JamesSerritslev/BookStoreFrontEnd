@@ -9,7 +9,7 @@ export interface JWTPayload {
 }
 
 export interface User {
-  id: number;
+  id: number | string;
   email: string;
   firstName: string;
   lastName: string;
@@ -78,22 +78,23 @@ export function isTokenValid(token: string | null): boolean {
     return true;
   }
 
-  // Existing mock token check
-  if (token.startsWith("mock.jwt.token.")) {
-    return true;
+  // Handle mock tokens (base64 encoded JSON)
+  if (!token.includes(".")) {
+    try {
+      const decoded = atob(token);
+      const payload = JSON.parse(decoded);
+      if (payload.exp) {
+        // Mock tokens use milliseconds for exp
+        return payload.exp > Date.now();
+      }
+      return true;
+    } catch (e) {
+      // Not a mock token
+    }
   }
 
-  // Existing JWT/base64 checks
-  try {
-    const decoded = atob(token);
-    const payload = JSON.parse(decoded);
-    if (payload.exp) {
-      return payload.exp > Date.now();
-    }
-    return true;
-  } catch (e) {
-    return !isTokenExpired(token);
-  }
+  // Handle standard JWTs (header.payload.signature)
+  return !isTokenExpired(token);
 }
 
 
@@ -116,7 +117,7 @@ export function getUserFromToken(token: string): User | null {
     email: payload.email,
     firstName: "", // These will be filled from API response
     lastName: "",
-    role: payload.role,
+    role: payload.role ? (payload.role.toUpperCase() as "BUYER" | "SELLER" | "ADMIN") : "BUYER",
   };
 }
 

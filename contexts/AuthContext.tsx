@@ -136,6 +136,11 @@ const login = async (credentials: LoginCredentials): Promise<void> => {
 
     const data: AuthResponse = await response.json();
 
+    // Normalize role to uppercase
+    if (data.user && data.user.role) {
+      data.user.role = data.user.role.toUpperCase() as "BUYER" | "SELLER" | "ADMIN";
+    }
+
     setToken(data.token);
     setUser(data.user);
     setTokenToStorage(data.token);
@@ -170,6 +175,11 @@ const register = async (data: RegisterData): Promise<void> => {
     }
 
     const authData: AuthResponse = await response.json();
+
+    // Normalize role to uppercase
+    if (authData.user && authData.user.role) {
+      authData.user.role = authData.user.role.toUpperCase() as "BUYER" | "SELLER" | "ADMIN";
+    }
 
     setToken(authData.token);
     setUser(authData.user);

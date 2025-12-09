@@ -120,4 +120,19 @@ export async function deleteBook(bookId: number): Promise<void> {
   }
 }
 
+// Aliases for backward compatibility
+export async function fetchAllBooks(): Promise<Book[]> {
+  return getAllBooks();
+}
+
+export async function updateBookById(
+  bookId: number,
+  updates: UpdateBookRequest
+): Promise<Book> {
+  return updateBook(bookId, updates);
+}
+
+export async function removeBookById(bookId: number): Promise<void> {
+  return deleteBook(bookId);
+}
 

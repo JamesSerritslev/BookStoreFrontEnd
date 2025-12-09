@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  onlinebookstore-db:
+    image: postgres:17.6
+    container_name: onlinebookstore-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=onlinebookstore_db
+      - POSTGRES_USER=onlinebookstore_user
+      - POSTGRES_PASSWORD=onlinebookstore_pass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onlinebookstore_user -d onlinebookstore_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MailHog (Email Service)
+  userservice-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: userservice-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+  # Book Service
+  book-service:
+    image: jacejnordgren/book-service:latest
+    platform: linux/amd64
+    container_name: book-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlinebookstore-db:5432/onlinebookstore_db
+      - SPRING_DATASOURCE_USERNAME=onlinebookstore_user
+      - SPRING_DATASOURCE_PASSWORD=onlinebookstore_pass
+    depends_on:
+      onlinebookstore-db:
+        condition: service_healthy
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    image: jacejnordgren/user-service:latest
+    platform: linux/amd64
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlinebookstore-db:5432/onlinebookstore_db
+      - SPRING_DATASOURCE_USERNAME=onlinebookstore_user
+      - SPRING_DATASOURCE_PASSWORD=onlinebookstore_pass
+      - SPRING_MAIL_HOST=userservice-mailhog
+      - SPRING_MAIL_PORT=1025
+    depends_on:
+      - onlinebookstore-db
+      - userservice-mailhog
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+  # Cart Service
+  cart-service:
+    image: jacejnordgren/cart-service:latest
+    platform: linux/amd64
+    container_name: cart-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlinebookstore-db:5432/onlinebookstore_db
+      - SPRING_DATASOURCE_USERNAME=onlinebookstore_user
+      - SPRING_DATASOURCE_PASSWORD=onlinebookstore_pass
+      - BOOK_SERVICE_BASE_URL=http://book-service:8080
+    depends_on:
+      - onlinebookstore-db
+      - book-service
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+  # Order Service
+  order-service:
+    image: jacejnordgren/order-service:latest
+    platform: linux/amd64
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlinebookstore-db:5432/onlinebookstore_db
+      - SPRING_DATASOURCE_USERNAME=onlinebookstore_user
+      - SPRING_DATASOURCE_PASSWORD=onlinebookstore_pass
+      - EXTERNAL_BOOK_SERVICE_URL=http://book-service:8080
+      - EXTERNAL_CART_SERVICE_URL=http://cart-service:8084
+    depends_on:
+      - onlinebookstore-db
+      - book-service
+      - cart-service
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+  # Frontend (Next.js)
+  bookstore-frontend:
+    image: YOUR_DOCKERHUB_USERNAME/bookstore-frontend:latest
+    container_name: bookstore-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NODE_ENV=production
+    depends_on:
+      - book-service
+      - user-service
+      - cart-service
+      - order-service
+    networks:
+      - bookstore-net
+    restart: unless-stopped
+
+networks:
+  bookstore-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+
